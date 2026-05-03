@@ -456,6 +456,7 @@ public class EmailService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
     public static void sendWelcomeEmail(String toEmail, String fullName, String role) {
         System.out.println("Sending Welcome email to: " + toEmail + " (Role: " + role + ")");
