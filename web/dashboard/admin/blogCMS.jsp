@@ -18,7 +18,7 @@
 </head>
 <body class="bg-dark text-white">
 <% request.setAttribute("activePage", "more"); %>
-<jsp:include page="/WEB-INF/fragments/admin-topnav.jspf" />
+<jsp:include page="/WEB-INF/fragments/admin-topnav.jsp" />
 
 <div class="admin-view">
     <!-- MAIN CONTENT -->

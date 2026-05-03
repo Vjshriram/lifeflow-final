@@ -27,7 +27,7 @@
     request.setAttribute("activePage", "campaigns"); 
     if ("ADMIN".equalsIgnoreCase(role)) {
 %>
-    <jsp:include page="/WEB-INF/fragments/admin-topnav.jspf" />
+    <jsp:include page="/WEB-INF/fragments/admin-topnav.jsp" />
 <% } else { %>
     <div class="d-flex">
         <jsp:include page="/WEB-INF/fragments/sidebar-bank.jspf" />
