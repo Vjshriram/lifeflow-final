@@ -479,31 +479,24 @@ public class EmailService {
             message.setFrom(new InternetAddress(USERNAME, FROM_NAME));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             
-            message.setSubject("Welcome to LifeFlow - Your Account is Approved! 🩸");
+            message.setSubject("Welcome to LifeFlow - Account Approved");
             
-            String roleText = "BANK".equalsIgnoreCase(role) ? "Blood Bank Partner" : "Life-Saving Donor";
-            String dashboardText = "BANK".equalsIgnoreCase(role) ? "manage your blood stock and broadcast emergency alerts" : "track your impact, respond to requests, and save lives";
-            
-            String htmlBody = "<div style='font-family: \"Inter\", Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-top: 8px solid #e11d48; border-radius: 16px; background-color: #ffffff;'>"
-                    + "<div style='text-align: center; margin-bottom: 30px;'>"
-                    + "  <h2 style='color: #e11d48; margin: 0; font-size: 24px;'>Great news!</h2>"
+            String htmlBody = "<div style='font-family: sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee;'>"
+                    + "<h2 style='color: #e11d48;'>Great news!</h2>"
+                    + "<p>Dear " + fullName + ",</p>"
+                    + "<p>Your registration has been successfully approved, and you are now officially a part of <strong>LifeFlow</strong>.</p>"
+                    + "<p>At LifeFlow, every donor plays a vital role in saving lives. Your willingness to contribute makes a real difference.</p>"
+                    + "<p>You can now log in and explore all available features, including updating your profile and responding to donation requests.</p>"
+                    + "<div style='text-align: center; margin: 30px 0;'>"
+                    + "  <a href='http://localhost:9090/blood-bank/login.jsp' style='background: #e11d48; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Login to Your Account</a>"
                     + "</div>"
-                    + "<p style='font-size: 1.1em; color: #334155;'>Dear <strong>" + fullName + "</strong>,</p>"
-                    + "<p style='font-size: 1.1em; line-height: 1.6; color: #334155;'>Your registration has been successfully approved, and you are now officially a part of <strong>LifeFlow</strong>.</p>"
-                    + "<p style='font-size: 1.1em; line-height: 1.6; color: #334155;'>At LifeFlow, every donor plays a vital role in saving lives. Your willingness to contribute makes a real difference.</p>"
-                    + "<p style='font-size: 1.1em; line-height: 1.6; color: #334155;'>You can now log in and explore all available features, including updating your profile, managing availability, and responding to donation requests.</p>"
-                    + "<div style='text-align: center; margin: 35px 0;'>"
-                    + "  <a href='http://localhost:9090/blood-bank/login.jsp' style='background: linear-gradient(135deg, #e11d48, #be123c); color: white; padding: 14px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.3);'>Login to Your Account</a>"
-                    + "</div>"
-                    + "<p style='font-size: 1.1em; line-height: 1.6; color: #334155;'>If you need any help, our support team is always here for you.</p>"
-                    + "<p style='font-size: 1.1em; line-height: 1.6; color: #334155; font-weight: bold;'>Together, we save lives.</p>"
-                    + "<div style='margin-top: 40px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: left;'>"
-                    + "  <p style='font-size: 1.1em; color: #334155; margin: 0;'>Best regards,</p>"
-                    + "  <p style='font-size: 1.1em; color: #e11d48; font-weight: bold; margin-top: 5px;'>Team LifeFlow</p>"
-                    + "</div>"
+                    + "<p>If you need any help, our support team is always here for you.</p>"
+                    + "<p>Together, we save lives.</p>"
+                    + "<br>"
+                    + "<p>Best regards,<br><strong>Team LifeFlow</strong></p>"
                     + "</div>";
                     
-            message.setContent(htmlBody, "text/html");
+            message.setContent(htmlBody, "text/html; charset=utf-8");
             Transport.send(message);
             System.out.println("✅ Welcome email sent successfully to " + toEmail);
         } catch (Exception e) {
