@@ -19,9 +19,9 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="<%=request.getContextPath()%>/assets/css/theme.css?v=3" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 <!-- Premium Visuals: 3D Globe & Charts -->
-<script src="https://unpkg.com/globe.gl"></script>
+<script src="https://unpkg.com/globe.gl" defer></script>
 </head>
 <body class="bg-dark text-white">
 <% request.setAttribute("activePage", "dashboard"); %>
@@ -564,7 +564,7 @@
 <jsp:include page="/chatWidget.jsp" />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    window.addEventListener('load', function() {
+    document.addEventListener('DOMContentLoaded', function() {
         // --- REAL-TIME OPERATIONAL FLUX CHART ---
         const ctxElement = document.getElementById('quickTrendChart');
         if (ctxElement) {
