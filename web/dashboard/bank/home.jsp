@@ -48,71 +48,8 @@
                                 <th>Message</th>
                             </tr>
                         </thead>
-                        <tbody>
-<%
-Firestore db = null;
-String alertBankId = null;
-boolean hasAlerts = false;
-try {
-    db = FirebaseConfig.getFirestore();
-    DocumentSnapshot userDoc = db.collection("users").document(userId).get().get();
-
-    if (userDoc.exists() && userDoc.getString("email") != null) {
-        String userEmail = userDoc.getString("email");
-        ApiFuture<QuerySnapshot> futureBank = db.collection("blood_banks").whereEqualTo("email", userEmail).get();
-        List<QueryDocumentSnapshot> bankDocs = futureBank.get().getDocuments();
-        if (!bankDocs.isEmpty()) {
-            alertBankId = bankDocs.get(0).getId();
-        }
-    }
-
-    if (alertBankId != null) {
-        ApiFuture<QuerySnapshot> alertFuture = db.collection("emergency_alerts").whereEqualTo("bank_id", alertBankId).get();
-        List<QueryDocumentSnapshot> alertDocs = new java.util.ArrayList<QueryDocumentSnapshot>(alertFuture.get().getDocuments());
-        
-        // Sort alerts by time descending
-        java.util.Collections.sort(alertDocs, new java.util.Comparator<QueryDocumentSnapshot>() {
-            public int compare(QueryDocumentSnapshot d1, QueryDocumentSnapshot d2) {
-                String t1 = d1.getString("created_at");
-                String t2 = d2.getString("created_at");
-                if (t1 == null) return 1;
-                if (t2 == null) return -1;
-                return t2.compareTo(t1);
-            }
-        });
-
-        for (QueryDocumentSnapshot alert : alertDocs) {
-            hasAlerts = true;
-            String bg = alert.getString("blood_group");
-            Double rad = alert.getDouble("radius_km");
-            String msg = alert.getString("message");
-            String createdAt = alert.getString("created_at");
-%>
-                            <tr>
-                                <td><span class="badge bg-danger rounded-pill px-3 fs-6 flex-shrink-0"><i class="fa-solid fa-droplet me-1"></i> <%= bg %></span></td>
-                                <td class="text-white-50"><i class="fa-solid fa-satellite-dish me-1"></i> <%= rad != null ? rad : 10.0 %> km radius</td>
-                                <td class="text-white-50"><i class="fa-regular fa-clock me-1"></i> <%= createdAt != null ? createdAt : "Just now" %></td>
-                                <td><span class="text-white"><%= msg != null ? msg : "Urgent blood request" %></span></td>
-                            </tr>
-<%
-        }
-    }
-    if (!hasAlerts) {
-%>
-                            <tr>
-                                <td colspan="4" class="text-center text-white-50 py-4">
-                                    <i class="fa-solid fa-check-circle fs-3 text-success mb-2 opacity-50"></i><br>
-                                    No active emergency broadcasts for this facility.
-                                </td>
-                            </tr>
-<%
-    }
-} catch (Exception e) {
-%>
-                            <tr><td colspan="4" class="text-danger py-4">Error loading alerts: <%= e.getMessage() %></td></tr>
-<%
-}
-%>
+                        <tbody id="alertsTableBody">
+                            <tr><td colspan="4" class="text-center py-5 text-white-50"><div class="spinner-border spinner-border-sm me-2"></div>Syncing emergency data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -129,30 +66,8 @@ try {
                             <span class="badge border border-secondary border-opacity-25 text-white-50 rounded-pill px-3 py-2">Auto-sync with Admin</span>
                         </div>
                         
-                        <div class="row g-3">
-                            <% 
-                                String[] groups = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
-                                Map<String, Long> stocks = new HashMap<>();
-                                if (alertBankId != null) {
-                                    ApiFuture<QuerySnapshot> stockFuture = db.collection("blood_stock").whereEqualTo("blood_bank_id", alertBankId).get();
-                                    for (QueryDocumentSnapshot sDoc : stockFuture.get().getDocuments()) {
-                                        stocks.put(sDoc.getString("blood_group"), sDoc.getLong("units"));
-                                    }
-                                }
-                                for (String g : groups) {
-                                    long units = stocks.getOrDefault(g, 0L);
-                                    String statusClass = units < 5 ? "text-danger fw-bold" : "text-success";
-                            %>
-                            <div class="col-md-3 col-6">
-                                <div class="p-3 border border-secondary border-opacity-25 rounded-4 text-center bg-dark h-100">
-                                    <div class="small text-white-50 text-uppercase fw-bold mb-1"><%= g %></div>
-                                    <div class="fs-4 <%= statusClass %> mb-2"><%= units %> <small class="fs-6">Units</small></div>
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill w-100" data-bs-toggle="modal" data-bs-target="#updateStock<%= g.replace("+","Plus").replace("-","Minus") %>">
-                                        Update
-                                    </button>
-                                </div>
-                            </div>
-                            <% } %>
+                        <div class="row g-3" id="inventoryGrid">
+                            <div class="col-12 text-center py-5 text-white-50"><div class="spinner-border spinner-border-sm me-2"></div>Syncing inventory units...</div>
                         </div>
                         <p class="text-white-50 small mt-4 mb-0"><i class="fa-solid fa-circle-info me-1"></i> Tip: Setting any stock below 5 units will automatically alert the Admin for emergency dispatch.</p>
                     </div>
@@ -192,129 +107,21 @@ try {
                                 <th class="text-end">Fulfillment Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-
-<%
-boolean any = false;
-
-try {
-    // First, get the user's email
-    DocumentSnapshot userDoc = db.collection("users").document(userId).get().get();
-    String bankId = null;
-
-    if (userDoc.exists() && userDoc.getString("email") != null) {
-        String userEmail = userDoc.getString("email");
-        ApiFuture<QuerySnapshot> futureBank = db.collection("blood_banks").whereEqualTo("email", userEmail).get();
-        List<QueryDocumentSnapshot> bankDocs = futureBank.get().getDocuments();
-        if (!bankDocs.isEmpty()) {
-            bankId = bankDocs.get(0).getId();
-        }
-    }
-
-    if (bankId == null) {
-%>
-                            <tr>
-                                <td colspan="5" class="text-center text-white-50 py-5 text-danger">
-                                    <i class="fa-solid fa-circle-exclamation fs-1 mb-3"></i><br>
-                                    Bank profile not found or linked. Please contact the administrator.
-                                </td>
-                            </tr>
-<%
-    } else {
-        ApiFuture<QuerySnapshot> apptFuture = db.collection("appointments").whereEqualTo("bank_id", bankId).get();
-        List<QueryDocumentSnapshot> apptDocs = new java.util.ArrayList<QueryDocumentSnapshot>(apptFuture.get().getDocuments());
-
-        // Sort by status descending (PENDING first usually in alphabetical sort, actually PENDING vs COMPLETED -> P is after C. But let's just sort by time for simplicity, or we can just sort in memory)
-        java.util.Collections.sort(apptDocs, new java.util.Comparator<QueryDocumentSnapshot>() {
-            public int compare(QueryDocumentSnapshot d1, QueryDocumentSnapshot d2) {
-                String t1 = d1.getString("appointment_time");
-                String t2 = d2.getString("appointment_time");
-                if (t1 == null) return 1;
-                if (t2 == null) return -1;
-                return t2.compareTo(t1); // Descending order — newest first
-            }
-        });
-
-        for (QueryDocumentSnapshot apptDoc : apptDocs) {
-            any = true;
-            String st = apptDoc.getString("status");
-            String donorIdStr = apptDoc.getString("donor_id");
-            String apptId = apptDoc.getId();
-            String apptTime = apptDoc.getString("appointment_time");
-
-            String donorName = "Unknown Donor";
-            String donorPhone = "N/A";
-            String bloodGroup = "N/A";
-
-            if (donorIdStr != null) {
-                DocumentSnapshot dDoc = db.collection("users").document(donorIdStr).get().get();
-                if (dDoc.exists()) {
-                    donorName = dDoc.getString("full_name") != null ? dDoc.getString("full_name") : "Unknown Donor";
-                    donorPhone = dDoc.getString("phone") != null ? dDoc.getString("phone") : "N/A";
-                    bloodGroup = dDoc.getString("blood_group") != null ? dDoc.getString("blood_group") : "N/A";
-                }
-            }
-%>
-                            <tr>
-                                <td><span class="text-white-50 fw-bold">#<%= apptId.substring(0, Math.min(8, apptId.length())) %></span></td>
-                                <td>
-                                    <div class="fw-bold text-white"><i class="fa-solid fa-user text-white-50 me-1"></i> <%= donorName %></div>
-                                    <div class="text-white-50" style="font-size: 0.85rem;"><i class="fa-solid fa-phone me-1"></i> <%= donorPhone %></div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-soft-danger px-3 shadow-sm" style="font-size: 0.9rem;">
-                                        <%= bloodGroup %>
-                                    </span>
-                                </td>
-                                <td class="text-white-50 fw-bold"><i class="fa-regular fa-clock me-1"></i> <%= apptTime != null ? apptTime : "" %></td>
-                                <td class="text-end">
-                                    <% if ("PENDING".equals(st)) { %>
-                                    <form action="<%= request.getContextPath() %>/CompleteAppointmentServlet" method="post" style="display:inline;">
-                                        <input type="hidden" name="appointmentId" value="<%= apptId %>">
-                                        <button type="submit" class="btn btn-premium btn-sm rounded-pill px-3 shadow-sm">
-                                            <i class="fa-solid fa-check me-1"></i> Mark Donated
-                                        </button>
-                                    </form>
-                                    <% } else { %>
-                                        <span class="badge bg-success rounded-pill px-3 fs-6"><i class="fa-solid fa-check-double me-1"></i> Completed</span>
-                                    <% } %>
-                                </td>
-                            </tr>
-<%
-        }
-        if (!any) {
-%>
-                            <tr>
-                                <td colspan="5" class="text-center text-white-50 py-5">
-                                    <i class="fa-solid fa-calendar-xmark fs-1 text-light mb-3"></i><br>
-                                    No incoming appointments found for this facility.
-                                </td>
-                            </tr>
-<%
-        }
-    }
-} catch (Exception e) {
-%>
-                            <tr>
-                                <td colspan="5" class="text-danger py-4 text-center">
-                                    <strong>Database Error:</strong> <%= e.getMessage() %>
-                                </td>
-                            </tr>
-<%
-}
-%>
+                        <tbody id="appointmentsTableBody">
+                            <tr><td colspan="5" class="text-center py-5 text-white-50"><div class="spinner-border spinner-border-sm me-2"></div>Syncing today's queue...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
 <!-- MODALS AREA -->
 <%
+    String[] groups = {"A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"};
     for (String g : groups) {
-        long units = stocks.getOrDefault(g, 0L);
 %>
 <div class="modal fade" id="updateStock<%= g.replace("+","Plus").replace("-","Minus") %>" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -328,7 +135,7 @@ try {
                     <input type="hidden" name="action" value="update_inventory">
                     <input type="hidden" name="bloodGroup" value="<%= g %>">
                     <label class="small text-white-50 mb-1">New Unit Count</label>
-                    <input type="number" name="units" class="form-control bg-dark text-white border-secondary rounded-pill mb-3" value="<%= units %>" required min="0">
+                    <input type="number" name="units" id="inputStock<%= g.replace("+","Plus").replace("-","Minus") %>" class="form-control bg-dark text-white border-secondary rounded-pill mb-3" value="0" required min="0">
                     <div class="d-grid">
                         <button type="submit" class="btn btn-danger rounded-pill">Save Changes</button>
                     </div>
@@ -379,5 +186,99 @@ try {
 
 <jsp:include page="/chatWidget.jsp" />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const root = '<%= request.getContextPath() %>';
+        
+        fetch(root + '/api/bank-dashboard')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+
+                // 1. Render Alerts
+                const alertsBody = document.getElementById('alertsTableBody');
+                alertsBody.innerHTML = '';
+                if (data.alerts && data.alerts.length > 0) {
+                    data.alerts.forEach(alert => {
+                        alertsBody.innerHTML += `
+                            <tr>
+                                <td><span class="badge bg-danger rounded-pill px-3 fs-6 flex-shrink-0"><i class="fa-solid fa-droplet me-1"></i> \${alert.blood_group}</span></td>
+                                <td class="text-white-50"><i class="fa-solid fa-satellite-dish me-1"></i> \${alert.radius_km || 10.0} km radius</td>
+                                <td class="text-white-50"><i class="fa-regular fa-clock me-1"></i> \${alert.created_at || "Just now"}</td>
+                                <td><span class="text-white">\${alert.message || "Urgent blood request"}</span></td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    alertsBody.innerHTML = '<tr><td colspan="4" class="text-center text-white-50 py-4"><i class="fa-solid fa-check-circle fs-3 text-success mb-2 opacity-50"></i><br>No active emergency broadcasts for this facility.</td></tr>';
+                }
+
+                // 2. Render Inventory
+                const invGrid = document.getElementById('inventoryGrid');
+                invGrid.innerHTML = '';
+                const groups = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+                groups.forEach(g => {
+                    const units = data.inventory[g] || 0;
+                    const statusClass = units < 5 ? "text-danger fw-bold" : "text-success";
+                    const gId = g.replace("+", "Plus").replace("-", "Minus");
+                    
+                    invGrid.innerHTML += `
+                        <div class="col-md-3 col-6">
+                            <div class="p-3 border border-secondary border-opacity-25 rounded-4 text-center bg-dark h-100">
+                                <div class="small text-white-50 text-uppercase fw-bold mb-1">\${g}</div>
+                                <div class="fs-4 \${statusClass} mb-2">\${units} <small class="fs-6">Units</small></div>
+                                <button class="btn btn-sm btn-outline-danger rounded-pill w-100" data-bs-toggle="modal" data-bs-target="#updateStock\${gId}">
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    // Update modal input value too
+                    const input = document.getElementById('inputStock' + gId);
+                    if (input) input.value = units;
+                });
+
+                // 3. Render Appointments
+                const apptsBody = document.getElementById('appointmentsTableBody');
+                apptsBody.innerHTML = '';
+                if (data.appointments && data.appointments.length > 0) {
+                    data.appointments.forEach(appt => {
+                        const shortId = appt.id.substring(0, 8);
+                        let actionHtml = `<span class="badge bg-success rounded-pill px-3 fs-6"><i class="fa-solid fa-check-double me-1"></i> Completed</span>`;
+                        if (appt.status === "PENDING") {
+                            actionHtml = `
+                                <form action="\${root}/CompleteAppointmentServlet" method="post" style="display:inline;">
+                                    <input type="hidden" name="appointmentId" value="\${appt.id}">
+                                    <button type="submit" class="btn btn-premium btn-sm rounded-pill px-3 shadow-sm">
+                                        <i class="fa-solid fa-check me-1"></i> Mark Donated
+                                    </button>
+                                </form>
+                            `;
+                        }
+                        
+                        apptsBody.innerHTML += `
+                            <tr>
+                                <td><span class="text-white-50 fw-bold">#\${shortId}</span></td>
+                                <td>
+                                    <div class="fw-bold text-white"><i class="fa-solid fa-user text-white-50 me-1"></i> \${appt.donorName}</div>
+                                    <div class="text-white-50" style="font-size: 0.85rem;"><i class="fa-solid fa-phone me-1"></i> \${appt.donorPhone}</div>
+                                </td>
+                                <td><span class="badge badge-soft-danger px-3 shadow-sm" style="font-size: 0.9rem;">\${appt.donorBloodGroup}</span></td>
+                                <td class="text-white-50 fw-bold"><i class="fa-regular fa-clock me-1"></i> \${appt.appointment_time || ""}</td>
+                                <td class="text-end">\${actionHtml}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    apptsBody.innerHTML = '<tr><td colspan="5" class="text-center text-white-50 py-5"><i class="fa-solid fa-calendar-xmark fs-1 text-light mb-3"></i><br>No incoming appointments found for this facility.</td></tr>';
+                }
+            })
+            .catch(err => {
+                console.error('Bank Dashboard Error:', err);
+                const alertsBody = document.getElementById('alertsTableBody');
+                alertsBody.innerHTML = '<tr><td colspan="4" class="text-danger py-4 text-center">Error loading dashboard data. Please refresh.</td></tr>';
+            });
+    });
+</script>
 </body>
 </html>
