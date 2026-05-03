@@ -7,13 +7,6 @@
         return;
     }
 
-    <%
-    String role = (String) session.getAttribute("role");
-    if (role == null || !"ADMIN".equalsIgnoreCase(role)) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
-        return;
-    }
-
     // 🤖 AUTOMATION: Run System Maintenance in Background (Non-blocking)
     com.bloodbank.util.AutomationService.runSystemMaintenance();
 %>
