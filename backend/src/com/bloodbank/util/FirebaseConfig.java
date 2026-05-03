@@ -16,35 +16,40 @@ public class FirebaseConfig {
 
     static {
         try {
-            // Path to your service account key file
-            String serviceAccountPath = "lifeflow-30d1a-firebase-adminsdk-fbsvc-387a43696d.json";
-            File keyFile = new File(serviceAccountPath);
+            FirebaseOptions options;
+            String jsonConfig = System.getenv("FIREBASE_CONFIG");
 
-            // Fallback to searching in the WEB-INF/classes or root if necessary
-            if (!keyFile.exists()) {
-                // Try to load from classpath if file not found in current directory
+            if (jsonConfig != null && !jsonConfig.isEmpty()) {
+                // Initialize from environment variable (Secure Production Method)
+                options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(jsonConfig.getBytes())))
+                        .build();
+                System.out.println("Firebase initialized from environment variable.");
+            } else {
+                // Fallback to local file (Local Development Method)
+                String serviceAccountPath = "lifeflow-30d1a-firebase-adminsdk-fbsvc-387a43696d.json";
                 java.net.URL resource = FirebaseConfig.class.getClassLoader().getResource(serviceAccountPath);
+                
+                java.io.InputStream serviceAccount;
                 if (resource != null) {
-                    keyFile = new File(resource.getFile());
+                    serviceAccount = resource.openStream();
+                } else {
+                    serviceAccount = new FileInputStream(serviceAccountPath);
                 }
+
+                options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .build();
+                System.out.println("Firebase initialized from local file.");
             }
-
-            FileInputStream serviceAccount = new FileInputStream(keyFile);
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
             }
 
             firestore = FirestoreClient.getFirestore();
-            System.out.println("Firebase Firestore initialized successfully.");
-
         } catch (IOException e) {
             System.err.println("Firebase initialization error: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
