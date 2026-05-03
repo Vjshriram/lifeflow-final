@@ -33,16 +33,20 @@ public class ChatServlet extends HttpServlet {
     }
 
     private void loadApiKey() {
-        Properties prop = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
-            if (input == null) {
-                System.err.println("Sorry, unable to find config.properties in classpath");
-                return;
+        // 🎯 OPTIMIZATION: Check Environment Variable first (Secure Cloud Method)
+        apiKey = System.getenv("GEMINI_API_KEY");
+        
+        if (apiKey == null || apiKey.isEmpty()) {
+            // Fallback to config.properties (Local Development Method)
+            Properties prop = new Properties();
+            try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+                if (input != null) {
+                    prop.load(input);
+                    apiKey = prop.getProperty("gemini.api.key");
+                }
+            } catch (IOException ex) {
+                System.err.println("Error loading config.properties: " + ex.getMessage());
             }
-            prop.load(input);
-            apiKey = prop.getProperty("gemini.api.key");
-        } catch (IOException ex) {
-            System.err.println("Error loading config.properties: " + ex.getMessage());
         }
     }
 
@@ -79,17 +83,27 @@ public class ChatServlet extends HttpServlet {
         String identity = (name != null) ? name : "Hero";
         String userRole = (role != null) ? role.toLowerCase() : "donor";
 
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+        // 🎯 FIX: Using stable gemini-1.5-flash model
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(url);
 
             // Construct System Instruction & Context
-            String systemInstruction = "You are the LifeFlow AI Assistant (Neural Engine). You are a professional, helpful, and empathetic medical assistant for a blood bank platform. " +
+            String systemInstruction = "You are the LifeFlow AI Assistant (Neural Engine), a professional and empathetic medical intelligence core for the LifeFlow platform. " +
+                    "LifeFlow is a premium, ultra-modern blood bank management system. " +
                     "The user's name is " + identity + " and their role is " + userRole + ". " +
-                    "Provide insights on donation eligibility, health advice, and platform features. " +
-                    "Be concise, professional, and slightly futuristic in tone. Do NOT mention being an AI unless asked. " +
-                    "If the user asks about specific donation rules, prioritize safety and platform protocols.";
+                    "YOU MUST BE AWARE OF THE FOLLOWING PLATFORM FEATURES TO ASSIST THE USER CORRECTLY:\n" +
+                    "1. DONORS: Can track donations/impact scores, view their digital 'Hero ID', download 'Recognition Certificates' for completed donations, book appointments at specific banks, find other donors, and respond to 'Critical Blood Demands' near them. " +
+                    "IMPORTANT: If a donor needs blood from another donor, they should use the 'Community Blood Requests' or 'Peer-to-Peer Request' feature to post a request that other donors can respond to.\n" +
+                    "2. ADMINS: Responsible for donor approvals, blood bank management, and dispatching 'Emergency Alerts' using the Gemini AI Dispatch assistant. They also have access to 'Intelligence Reporting' for XLS exports.\n" +
+                    "3. BLOOD BANKS: Can manage live blood stock inventory, fulfill appointments by marking them as 'Donated', and trigger 'Manual Emergency Requests' if stock levels are critical.\n" +
+                    "GENERAL INTERACTION RULES:\n" +
+                    "- Be concise, professional, and slightly futuristic (Premium UX tone).\n" +
+                    "- Use emojis strategically to make the interaction more engaging (e.g., 🩸, ❤️, 🎖️, 🤖, ✨).\n" +
+                    "- If the user asks for help or 'what to do', provide specific instructions based on the platform features above.\n" +
+                    "- Do NOT mention being an AI unless explicitly asked.\n" +
+                    "- Prioritize medical safety and official platform protocols.";
 
             JSONObject jsonPayload = new JSONObject();
             
