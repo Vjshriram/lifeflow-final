@@ -18,7 +18,7 @@
         <!-- Messages Area -->
         <div id="chat-messages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
             <div style="background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 12px 16px; border-radius: 15px 15px 15px 0; font-size: 0.85rem; max-width: 85%;">
-                Welcome Hero! I'm your health-assistant. Ask me anything about donation eligibility or recovery.
+                Welcome Hero! 🩸 I'm your Neural Engine assistant. Ask me anything about donations, Hero IDs, or community requests! 🤖✨
             </div>
         </div>
 

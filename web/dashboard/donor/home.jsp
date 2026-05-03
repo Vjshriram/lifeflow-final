@@ -115,105 +115,11 @@
             <div class="card-body p-4 p-md-5">
                 <h4 class="fw-bold mb-4 text-warning"><i class="fa-solid fa-bell me-2 mt-1"></i> Critical Blood Demands Near You</h4>
                 
-                <div class="row g-3"><%
-    boolean anyAlerts = false;
-    String myBloodGroup = (String) session.getAttribute("bloodGroup");
-    if (myBloodGroup == null) myBloodGroup = "Unknown";
-
-    List<QueryDocumentSnapshot> apptDocs = new java.util.ArrayList<QueryDocumentSnapshot>();
-    java.util.Map<String, String> bankNames = new java.util.HashMap<String, String>();
-
-    try {
-        Firestore db = FirebaseConfig.getFirestore();
-        
-        if (myBloodGroup != null && !myBloodGroup.isEmpty() && !"Unknown".equals(myBloodGroup)) {
-            // 1. Fetch Active Emergency Alerts
-            ApiFuture<QuerySnapshot> alertFuture = db.collection("emergency_alerts")
-                    .whereEqualTo("blood_group", myBloodGroup)
-                    .whereEqualTo("status", "ACTIVE").get();
-            List<QueryDocumentSnapshot> alerts = new java.util.ArrayList<QueryDocumentSnapshot>(alertFuture.get().getDocuments());
-            
-            // 2. Fetch All Appointments for this donor
-            ApiFuture<QuerySnapshot> apptHistFuture = db.collection("appointments")
-                    .whereEqualTo("donor_id", userId).get();
-            apptDocs = new java.util.ArrayList<QueryDocumentSnapshot>(apptHistFuture.get().getDocuments());
-
-            // 💡 BATCH FETCH OPTIMIZATION: Collect all Bank IDs from alerts and appointments
-            java.util.Set<String> bankIds = new java.util.HashSet<String>();
-            for (QueryDocumentSnapshot alert : alerts) {
-                String bId = alert.getString("bank_id");
-                if (bId != null) bankIds.add(bId);
-            }
-            for (QueryDocumentSnapshot appt : apptDocs) {
-                String bId = appt.getString("bank_id");
-                if (bId != null) bankIds.add(bId);
-            }
-
-            if (!bankIds.isEmpty()) {
-                java.util.List<DocumentReference> refs = new java.util.ArrayList<DocumentReference>();
-                for (String id : bankIds) refs.add(db.collection("blood_banks").document(id));
-                
-                // One single batch read instead of N reads!
-                List<DocumentSnapshot> bankDocs = db.getAll(refs.toArray(new DocumentReference[0])).get();
-                for (DocumentSnapshot bDoc : bankDocs) {
-                    if (bDoc.exists()) {
-                        String name = bDoc.getString("bank_name");
-                        if (name == null) name = bDoc.getString("full_name"); // Fallback for legacy
-                        bankNames.put(bDoc.getId(), name != null ? name : "Unknown Facility");
-                    }
-                }
-            }
-
-            // Render Alerts
-            java.util.Collections.sort(alerts, new java.util.Comparator<QueryDocumentSnapshot>() {
-                public int compare(QueryDocumentSnapshot d1, QueryDocumentSnapshot d2) {
-                    String t1 = d1.getString("created_at");
-                    String t2 = d2.getString("created_at");
-                    return (t2 != null ? t2 : "").compareTo(t1 != null ? t1 : "");
-                }
-            });
-
-            for (QueryDocumentSnapshot alert : alerts) {
-                anyAlerts = true;
-                String bankId = alert.getString("bank_id");
-                String msg = alert.getString("message");
-                Double radius = alert.getDouble("radius_km");
-                String time = alert.getString("created_at");
-                String bName = bankNames.getOrDefault(bankId, "Local Facility");
-%>
-                    <div class="col-md-6">
-                        <div class="p-3 border border-secondary border-opacity-25 rounded bg-dark shadow-sm position-relative overflow-hidden">
-                            <div class="position-absolute top-0 start-0 w-100 bg-warning" style="height: 4px;"></div>
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="fw-bold text-white mb-0"><i class="fa-solid fa-hospital-user text-danger me-1"></i> <%= bName %></h6>
-                                <span class="badge bg-danger rounded-pill"><%= myBloodGroup %> Needed</span>
-                            </div>
-                            <p class="text-white-50 small mb-2"><i class="fa-solid fa-satellite-dish me-1"></i> <%= radius != null ? radius : 10.0 %>km Alert Radius</p>
-                            <p class="mb-3 fw-medium text-white"><%= msg != null ? msg : "Urgent requirement dispatched." %></p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-white-50"><i class="fa-regular fa-clock me-1"></i> <%= time %></small>
-                                <a href="<%= request.getContextPath() %>/BookAppointmentServlet?prefillBankId=<%= bankId %>&alertId=<%= alert.getId() %>" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold">
-                                    Respond Now <i class="fa-solid fa-arrow-right ms-1"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-<%
-            }
-        }
-    } catch (Exception e) {}
-    
-    if (!anyAlerts) {
-%>
+                <div class="row g-3" id="alertsContainer">
                     <div class="col-12 text-center py-4">
-                        <div class="d-inline-flex bg-success bg-opacity-10 text-success p-3 rounded-circle mb-3 border border-success border-opacity-25">
-                            <i class="fa-solid fa-check fs-2"></i>
-                        </div>
-                        <h6 class="text-white-50 fw-bold pb-2">No critical emergencies for <%= myBloodGroup != null ? myBloodGroup : "your blood type" %> in your area right now.</h6>
+                        <div class="spinner-border text-warning mb-3"></div>
+                        <p class="text-white-50">Checking for urgent local demands...</p>
                     </div>
-<%
-    }
-%>
                 </div>
             </div>
         </div>
@@ -240,59 +146,8 @@
                             <th>Created</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <%
-                            try {
-                                Firestore dbP2p = FirebaseConfig.getFirestore();
-                                java.util.List<QueryDocumentSnapshot> p2pDocs = dbP2p.collection("peer_requests")
-                                    .orderBy("created_at", com.google.cloud.firestore.Query.Direction.DESCENDING)
-                                    .limit(5).get().get().getDocuments();
-                                boolean hasP2p = false;
-                                for (QueryDocumentSnapshot doc : p2pDocs) {
-                                    hasP2p = true;
-                                    String rName = doc.getString("requester_name");
-                                    String rBg = doc.getString("blood_group");
-                                    String hCity = doc.getString("hospital_city");
-                                    String urg = doc.getString("urgency");
-                                    String stat = doc.getString("status");
-                                    String cAt = doc.getString("created_at");
-                                    String rOwnerId = doc.getString("donor_id");
-                                    boolean isMine = (userId != null && userId.equals(rOwnerId));
-                        %>
-                                <tr>
-                                    <td class="fw-bold text-white"><%= rName %></td>
-                                    <td><span class="badge bg-danger rounded-pill px-2 fs-6"><%= rBg %></span></td>
-                                    <td><div class="text-light text-opacity-75 small" style="max-width: 150px;"><%= hCity %></div></td>
-                                    <td><span class="badge <%= "Emergency".equals(urg) ? "bg-danger" : "bg-primary" %> bg-opacity-10 text-<%= "Emergency".equals(urg) ? "danger" : "primary" %> border border-<%= "Emergency".equals(urg) ? "danger" : "primary" %> border-opacity-25 rounded-pill"><%= urg %></span></td>
-                                    <td>
-                                        <span class="badge <%= "COMPLETED".equalsIgnoreCase(stat) ? "bg-success" : "badge-soft-warning" %>"><%= stat %></span>
-                                    </td>
-                                    <td class="text-light text-opacity-75 small">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <%= cAt %>
-                                            <% if (!isMine && "PENDING".equalsIgnoreCase(stat) && rBg != null && rBg.equalsIgnoreCase(myBloodGroup)) { %>
-                                                <%
-                                                    // Try to find bankId if stored
-                                                    String bId = doc.getString("bank_id");
-                                                    if (bId != null && !bId.isEmpty()) {
-                                                %>
-                                                    <a href="<%= request.getContextPath() %>/BookAppointmentServlet?prefillBankId=<%= bId %>&requestId=<%= doc.getId() %>" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.7rem;">
-                                                        Respond
-                                                    </a>
-                                                <% } else { %>
-                                                    <a href="<%= request.getContextPath() %>/BookAppointmentServlet?requestId=<%= doc.getId() %>" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.7rem;">
-                                                        Respond
-                                                    </a>
-                                                <% } %>
-                                            <% } %>
-                                        </div>
-                                    </td>
-                                </tr>
-                        <%
-                                }
-                                if(!hasP2p) out.print("<tr><td colspan='6' class='text-center text-white-50 py-5 pt-5 pb-4'>No active community blood requests at this moment.</td></tr>");
-                            } catch (Exception e) {}
-                        %>
+                        <tbody id="communityRequestsTable">
+                            <tr><td colspan="6" class="text-center py-5 text-white-50"><div class="spinner-border spinner-border-sm me-2"></div>Syncing requests...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -313,55 +168,8 @@
                             <th class="text-center">Recognition</th>
                         </tr>
                         </thead>
-                        <tbody>
-<%
-    boolean any = false;
-    try {
-        // 💡 OPTIMIZATION: Using pre-fetched apptDocs and bankNames map
-        // (apptDocs and bankNames were defined above in the Alerts section logic)
-        
-        // Sort appointments by time descending
-        java.util.Collections.sort(apptDocs, new java.util.Comparator<QueryDocumentSnapshot>() {
-            public int compare(QueryDocumentSnapshot d1, QueryDocumentSnapshot d2) {
-                String t1 = d1.getString("appointment_time");
-                String t2 = d2.getString("appointment_time");
-                return (t2 != null ? t2 : "").compareTo(t1 != null ? t1 : "");
-            }
-        });
- 
-        for (QueryDocumentSnapshot doc : apptDocs) {
-            any = true;
-            String st = doc.getString("status");
-            String apptTime = doc.getString("appointment_time");
-            String bankId = doc.getString("bank_id");
-            String appId = doc.getId();
-            String bankName = bankNames.getOrDefault(bankId, "Unknown Bank");
-
-            String badgeClass = "secondary";
-            if ("COMPLETED".equalsIgnoreCase(st)) badgeClass = "badge-soft-success";
-            else if ("CONFIRMED".equalsIgnoreCase(st)) badgeClass = "badge-soft-primary";
-            else if ("PENDING".equalsIgnoreCase(st)) badgeClass = "badge-soft-warning";
-            else if ("CANCELLED".equalsIgnoreCase(st)) badgeClass = "badge-soft-danger";
-%>
-                        <tr>
-                            <td><div class="fw-bold text-white"><i class="fa-regular fa-calendar me-2 text-white-50"></i><%= apptTime != null ? apptTime : "" %></div></td>
-                            <td class="text-light text-opacity-75"><i class="fa-solid fa-building-user me-1 border border-secondary border-opacity-25 p-1 rounded"></i> <%= bankName %></td>
-                            <td><span class="badge <%= badgeClass %> px-3 rounded-pill fs-6"><%= st != null ? st : "" %></span></td>
-                            <td class="text-center">
-                                <% if ("COMPLETED".equalsIgnoreCase(st)) { %>
-                                <a class="btn btn-sm btn-outline-danger rounded-pill fw-bold" href="<%= request.getContextPath() %>/certificate?appointmentId=<%= appId %>" target="_blank">
-                                    <i class="fa-solid fa-award me-1"></i> Certificate
-                                </a>
-                                <% } else { %>
-                                <span class="text-white-50" style="font-size: 0.8rem;"><i class="fa-solid fa-hourglass-empty me-1"></i> Pending Verification</span>
-                                <% } %>
-                            </td>
-                        </tr>
-<%
-        }
-        if (!any) { out.print("<tr><td colspan='4' class='text-center text-white-50 py-5 pt-5 pb-5'><i class='fa-solid fa-notes-medical fs-1 text-white-50 mb-3 opacity-50'></i><br>No donation appointments recorded on your profile yet.</td></tr>"); }
-    } catch (Exception e) { out.print("<tr><td colspan='4' class='text-danger py-4'>Error loading appointments: " + e.getMessage() + "</td></tr>"); }
-%>
+                        <tbody id="donationHistoryTable">
+                            <tr><td colspan="4" class="text-center py-5 text-white-50"><div class="spinner-border spinner-border-sm me-2"></div>Syncing your impact...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -412,6 +220,123 @@
                     });
             });
         }
+
+        // --- DASHBOARD HOME ASYNC DATA ---
+        const userId = '<%= userId %>';
+        const myBloodGroup = '<%= myBloodGroup %>';
+        const root = '<%= request.getContextPath() %>';
+
+        fetch(root + '/api/donor-dashboard')
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+
+                // 1. Render Alerts
+                const alertsContainer = document.getElementById('alertsContainer');
+                alertsContainer.innerHTML = '';
+                if (data.alerts && data.alerts.length > 0) {
+                    data.alerts.forEach(alert => {
+                        const bName = data.bankNames[alert.bank_id] || "Local Facility";
+                        alertsContainer.innerHTML += `
+                            <div class="col-md-6">
+                                <div class="p-3 border border-secondary border-opacity-25 rounded bg-dark shadow-sm position-relative overflow-hidden">
+                                    <div class="position-absolute top-0 start-0 w-100 bg-warning" style="height: 4px;"></div>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold text-white mb-0"><i class="fa-solid fa-hospital-user text-danger me-1"></i> ${bName}</h6>
+                                        <span class="badge bg-danger rounded-pill">${myBloodGroup} Needed</span>
+                                    </div>
+                                    <p class="text-white-50 small mb-2"><i class="fa-solid fa-satellite-dish me-1"></i> ${alert.radius_km || 10.0}km Alert Radius</p>
+                                    <p class="mb-3 fw-medium text-white">${alert.message || "Urgent requirement dispatched."}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-white-50"><i class="fa-regular fa-clock me-1"></i> ${alert.created_at}</small>
+                                        <a href="${root}/BookAppointmentServlet?prefillBankId=${alert.bank_id}&alertId=${alert.id}" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold">
+                                            Respond Now <i class="fa-solid fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    alertsContainer.innerHTML = `
+                        <div class="col-12 text-center py-4">
+                            <div class="d-inline-flex bg-success bg-opacity-10 text-success p-3 rounded-circle mb-3 border border-success border-opacity-25">
+                                <i class="fa-solid fa-check fs-2"></i>
+                            </div>
+                            <h6 class="text-white-50 fw-bold pb-2">No critical emergencies for ${myBloodGroup || "your blood type"} in your area right now.</h6>
+                        </div>
+                    `;
+                }
+
+                // 2. Render Community Requests
+                const p2pTable = document.getElementById('communityRequestsTable');
+                p2pTable.innerHTML = '';
+                if (data.communityRequests && data.communityRequests.length > 0) {
+                    data.communityRequests.forEach(req => {
+                        const isMine = (userId === req.donor_id);
+                        const urgClass = req.urgency === "Emergency" ? "bg-danger" : "bg-primary";
+                        const statClass = req.status === "COMPLETED" ? "bg-success" : "badge-soft-warning";
+                        
+                        let respondBtn = '';
+                        if (!isMine && req.status === "PENDING" && req.blood_group === myBloodGroup) {
+                            respondBtn = `<a href="${root}/BookAppointmentServlet?requestId=${req.id}" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.7rem;">Respond</a>`;
+                        }
+
+                        p2pTable.innerHTML += `
+                            <tr>
+                                <td class="fw-bold text-white">${req.requester_name}</td>
+                                <td><span class="badge bg-danger rounded-pill px-2 fs-6">${req.blood_group}</span></td>
+                                <td><div class="text-light text-opacity-75 small" style="max-width: 150px;">${req.hospital_city}</div></td>
+                                <td><span class="badge ${urgClass} bg-opacity-10 text-${req.urgency === "Emergency" ? 'danger' : 'primary'} border border-${req.urgency === "Emergency" ? 'danger' : 'primary'} border-opacity-25 rounded-pill">${req.urgency}</span></td>
+                                <td><span class="badge ${statClass}">${req.status}</span></td>
+                                <td class="text-light text-opacity-75 small">
+                                    <div class="d-flex align-items-center gap-2">${req.created_at} ${respondBtn}</div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    p2pTable.innerHTML = '<tr><td colspan="6" class="text-center text-white-50 py-5 pt-5 pb-4">No active community blood requests at this moment.</td></tr>';
+                }
+
+                // 3. Render Donation History
+                const historyTable = document.getElementById('donationHistoryTable');
+                historyTable.innerHTML = '';
+                if (data.appointments && data.appointments.length > 0) {
+                    // Sort descending by time
+                    const sortedAppts = data.appointments.sort((a, b) => (b.appointment_time || "").localeCompare(a.appointment_time || ""));
+                    sortedAppts.forEach(appt => {
+                        let badgeClass = "secondary";
+                        const st = appt.status;
+                        if (st === "COMPLETED") badgeClass = "badge-soft-success";
+                        else if (st === "CONFIRMED") badgeClass = "badge-soft-primary";
+                        else if (st === "PENDING") badgeClass = "badge-soft-warning";
+                        else if (st === "CANCELLED") badgeClass = "badge-soft-danger";
+
+                        const bankName = data.bankNames[appt.bank_id] || "Unknown Bank";
+                        let certAction = `<span class="text-white-50" style="font-size: 0.8rem;"><i class="fa-solid fa-hourglass-empty me-1"></i> Pending Verification</span>`;
+                        if (st === "COMPLETED") {
+                            certAction = `<a class="btn btn-sm btn-outline-danger rounded-pill fw-bold" href="${root}/certificate?appointmentId=${appt.id}" target="_blank"><i class="fa-solid fa-award me-1"></i> Certificate</a>`;
+                        }
+
+                        historyTable.innerHTML += `
+                            <tr>
+                                <td><div class="fw-bold text-white"><i class="fa-regular fa-calendar me-2 text-white-50"></i>${appt.appointment_time || ""}</div></td>
+                                <td class="text-light text-opacity-75"><i class="fa-solid fa-building-user me-1 border border-secondary border-opacity-25 p-1 rounded"></i> ${bankName}</td>
+                                <td><span class="badge ${badgeClass} px-3 rounded-pill fs-6">${st || ""}</span></td>
+                                <td class="text-center">${certAction}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    historyTable.innerHTML = '<tr><td colspan="4" class="text-center text-white-50 py-5 pt-5 pb-5"><i class="fa-solid fa-notes-medical fs-1 text-white-50 mb-3 opacity-50"></i><br>No donation appointments recorded on your profile yet.</td></tr>';
+                }
+            })
+            .catch(err => {
+                console.error('Donor Dashboard Error:', err);
+                const alertsContainer = document.getElementById('alertsContainer');
+                alertsContainer.innerHTML = '<div class="col-12 text-center text-danger py-4">Error loading dashboard data. Please refresh.</div>';
+            });
     });
 </script>
 </body>

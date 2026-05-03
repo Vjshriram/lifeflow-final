@@ -92,25 +92,20 @@ public class AutomationService {
                 System.out.println("🤖 AUTOMATION: Starting background maintenance...");
                 Firestore db = FirebaseConfig.getFirestore();
                 LocalDateTime cutoff = LocalDateTime.now().minusHours(24);
+                String cutoffStr = cutoff.format(formatter);
                 
+                // 🎯 OPTIMIZATION: Filter by time in query to avoid fetching thousands of docs
                 QuerySnapshot pendingAppts = db.collection("appointments")
                     .whereEqualTo("status", "PENDING")
+                    .whereLessThanOrEqualTo("appointment_time", cutoffStr)
                     .get().get();
 
                 WriteBatch batch = db.batch();
                 int count = 0;
 
                 for (QueryDocumentSnapshot doc : pendingAppts.getDocuments()) {
-                    String timeStr = doc.getString("appointment_time");
-                    if (timeStr != null) {
-                        try {
-                            LocalDateTime apptTime = LocalDateTime.parse(timeStr, formatter);
-                            if (apptTime.isBefore(cutoff)) {
-                                batch.delete(doc.getReference());
-                                count++;
-                            }
-                        } catch (Exception ignored) {}
-                    }
+                    batch.delete(doc.getReference());
+                    count++;
                 }
 
                 if (count > 0) {
@@ -132,10 +127,14 @@ public class AutomationService {
         try {
             LocalDateTime targetDate = LocalDateTime.now().minusDays(90);
             String datePrefix = targetDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String start = datePrefix + " 00:00:00";
+            String end = datePrefix + " 23:59:59";
             
-            // Find completion events from exactly 90 days ago
+            // 🎯 OPTIMIZATION: Filter by exact date range (90 days ago) to minimize reads
             QuerySnapshot recentCompletions = db.collection("appointments")
                 .whereEqualTo("status", "COMPLETED")
+                .whereGreaterThanOrEqualTo("appointment_time", start)
+                .whereLessThanOrEqualTo("appointment_time", end)
                 .get().get();
 
             for (QueryDocumentSnapshot doc : recentCompletions.getDocuments()) {

@@ -7,27 +7,15 @@
         return;
     }
 
+    <%
+    String role = (String) session.getAttribute("role");
+    if (role == null || !"ADMIN".equalsIgnoreCase(role)) {
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        return;
+    }
+
     // 🤖 AUTOMATION: Run System Maintenance in Background (Non-blocking)
     com.bloodbank.util.AutomationService.runSystemMaintenance();
-
-    long totalDonors = 0, totalBanks = 0, pendingApprovals = 0, activeAlerts = 0;
-    try {
-        Firestore db = FirebaseConfig.getFirestore();
-        
-        // 🎯 OPTIMIZATION: Fire all count queries in parallel
-        com.google.api.core.ApiFuture<AggregateQuerySnapshot> fDonors = db.collection("users").whereEqualTo("role", "DONOR").whereEqualTo("status", "APPROVED").count().get();
-        com.google.api.core.ApiFuture<AggregateQuerySnapshot> fBanks = db.collection("blood_banks").whereEqualTo("status", "APPROVED").count().get();
-        com.google.api.core.ApiFuture<AggregateQuerySnapshot> fPending = db.collection("users").whereEqualTo("status", "PENDING").count().get();
-        com.google.api.core.ApiFuture<AggregateQuerySnapshot> fAlerts = db.collection("emergency_alerts").count().get();
-
-        // 🎯 OPTIMIZATION: Wait for all at once (Total wait = longest single query)
-        totalDonors = fDonors.get().getCount();
-        totalBanks = fBanks.get().getCount();
-        pendingApprovals = fPending.get().getCount();
-        activeAlerts = fAlerts.get().getCount();
-    } catch (Exception e) {
-        System.err.println("Dashboard Stat Error: " + e.getMessage());
-    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,7 +83,7 @@
                                     </div>
                                     <span class="text-white-50 text-uppercase small fw-bold" style="letter-spacing:1.5px">Total Donors</span>
                                 </div>
-                                <h1 class="fw-800 mb-0 text-white count-up" style="font-family: 'Poppins';"><%= totalDonors %></h1>
+                                <h1 class="fw-800 mb-0 text-white count-up" style="font-family: 'Poppins';" id="totalDonors">...</h1>
                                 <div class="text-success small mt-2 d-flex align-items-center gap-1">
                                     <div class="p-1 rounded-circle bg-success bg-opacity-20"><i class="fa-solid fa-arrow-up" style="font-size: 0.7rem;"></i></div>
                                     <span class="fw-bold">4.2% Growth</span>
@@ -111,7 +99,7 @@
                                     <div class="icon-blob bg-info bg-opacity-10 text-info" style="border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-hospital"></i></div>
                                     <span class="text-white-50 text-uppercase small fw-bold" style="letter-spacing:1.5px">Banks</span>
                                 </div>
-                                <h1 class="fw-800 mb-0 text-white" style="font-family: 'Poppins';"><%= totalBanks %></h1>
+                                <h1 class="fw-800 mb-0 text-white" style="font-family: 'Poppins';" id="totalBanks">...</h1>
                                 <div class="text-white-50 small mt-2">Active Centers</div>
                             </div>
                         </div>
@@ -124,7 +112,7 @@
                                     <div class="icon-blob bg-warning bg-opacity-10 text-warning" style="border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-user-clock"></i></div>
                                     <span class="text-white-50 text-uppercase small fw-bold" style="letter-spacing:1.5px">Pending</span>
                                 </div>
-                                <h1 class="fw-800 mb-0 text-white" style="font-family: 'Poppins';"><%= pendingApprovals %></h1>
+                                <h1 class="fw-800 mb-0 text-white" style="font-family: 'Poppins';" id="pendingApprovals">...</h1>
                                 <div class="text-warning small mt-2 d-flex align-items-center gap-1"><i class="fa-solid fa-clock"></i> <span>Awaiting review</span></div>
                             </div>
                         </div>
@@ -142,7 +130,7 @@
                                     </div>
                                     <span class="text-white text-uppercase small fw-800" style="letter-spacing:1.5px; opacity: 0.8">Emergency</span>
                                 </div>
-                                <h1 class="fw-800 mb-0 text-white" style="font-family: 'Poppins'; text-shadow: 0 4px 10px rgba(0,0,0,0.2);"><%= activeAlerts %></h1>
+                                <h1 class="fw-800 mb-0 text-white" style="font-family: 'Poppins'; text-shadow: 0 4px 10px rgba(0,0,0,0.2);" id="activeAlerts">...</h1>
                                 <div class="text-white small mt-2 d-flex align-items-center gap-1">
                                     <span class="badge bg-white bg-opacity-20 rounded-pill px-3 fw-bold">CRITICAL DISPATCH</span>
                                 </div>
@@ -181,45 +169,8 @@
                                         <th>Registered</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                <%
-                                try {
-                                    Firestore db = FirebaseConfig.getFirestore();
-                                    
-                                    // 🎯 OPTIMIZATION: Start both queries in parallel
-                                    com.google.api.core.ApiFuture<QuerySnapshot> fRecent = db.collection("users")
-                                        .orderBy("created_at", com.google.cloud.firestore.Query.Direction.DESCENDING)
-                                        .limit(5).get();
-                                        
-                                    com.google.api.core.ApiFuture<QuerySnapshot> fP2P = db.collection("peer_requests")
-                                        .orderBy("created_at", com.google.cloud.firestore.Query.Direction.DESCENDING)
-                                        .limit(5).get();
-
-                                    // Wait for Recent Users
-                                    List<QueryDocumentSnapshot> recentUsers = fRecent.get().getDocuments();
-                                    for (QueryDocumentSnapshot doc : recentUsers) {
-                                        String stat = doc.getString("status");
-                                        String badgeCls = "badge-soft-success";
-                                        if ("PENDING".equals(stat)) badgeCls = "badge-soft-warning";
-                                        if ("REJECTED".equals(stat)) badgeCls = "badge-soft-danger";
-                                        
-                                        java.util.Date created = null;
-                                        Object createdAtObj = doc.get("created_at");
-                                        if (createdAtObj instanceof com.google.cloud.Timestamp) {
-                                            created = ((com.google.cloud.Timestamp) createdAtObj).toDate();
-                                        } else if (createdAtObj instanceof String) {
-                                            try {
-                                                created = java.sql.Timestamp.valueOf((String) createdAtObj);
-                                            } catch (Exception ignores) {}
-                                        }
-                                %>
-                                    <tr>
-                                        <td><div class="fw-bold text-white"><%= doc.getString("full_name") %></div></td>
-                                        <td><span class="badge badge-soft-info"><%= doc.getString("role") %></span></td>
-                                        <td><span class="badge <%=badgeCls%>"><%= stat %></span></td>
-                                        <td class="text-white-50" style="font-size:0.85rem;"><i class="fa-regular fa-calendar me-1"></i> <%= created != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(created) : "N/A" %></td>
-                                    </tr>
-                                <%  } %>
+                                <tbody id="recentUsersTable">
+                                    <tr><td colspan="4" class="text-center py-3 text-white-50"><div class="spinner-border spinner-border-sm me-2"></div>Syncing...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -245,28 +196,8 @@
                                         <th>Registered</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                <%
-                                    // Wait for P2P Requests
-                                    List<QueryDocumentSnapshot> p2pReqs = fP2P.get().getDocuments();
-                                    boolean hasP2pData = false;
-                                    for (QueryDocumentSnapshot doc : p2pReqs) {
-                                        hasP2pData = true;
-                                %>
-                                    <tr>
-                                        <td><div class="fw-bold text-white"><%= doc.getString("requester_name") %></div></td>
-                                        <td><span class="badge badge-soft-danger fs-6"><%= doc.getString("blood_group") %></span></td>
-                                        <td><div class="text-white-50"><%= doc.getString("hospital_city") %></div></td>
-                                        <td><%= doc.getString("urgency") %></td>
-                                        <td><span class="badge badge-soft-warning"><%= doc.getString("status") %></span></td>
-                                        <td class="text-white-50" style="font-size:0.85rem;"><%= doc.getString("created_at") %></td>
-                                    </tr>
-                                <%  }
-                                    if (!hasP2pData) out.print("<tr><td colspan='6' class='text-center py-4 text-white-50'>No peer-to-peer requests found.</td></tr>");
-                                } catch(Exception e) {
-                                    System.err.println("Dashboard Table Error: " + e.getMessage());
-                                }
-                                %>
+                                <tbody id="p2pRequestsTable">
+                                    <tr><td colspan="6" class="text-center py-3 text-white-50"><div class="spinner-border spinner-border-sm me-2"></div>Syncing Pulse...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -880,6 +811,59 @@
                     });
             });
         }
+        // --- DASHBOARD HOME STATS FETCH ---
+        fetch('<%=request.getContextPath()%>/api/analytics?metric=dashboardHome')
+            .then(res => res.json())
+            .then(data => {
+                // Populate Stats
+                document.getElementById('totalDonors').textContent = data.totalDonors;
+                document.getElementById('totalBanks').textContent = data.totalBanks;
+                document.getElementById('pendingApprovals').textContent = data.pendingApprovals;
+                document.getElementById('activeAlerts').textContent = data.activeAlerts;
+
+                // Populate Recent Users
+                const userTable = document.getElementById('recentUsersTable');
+                userTable.innerHTML = '';
+                if (data.recentUsers && data.recentUsers.length > 0) {
+                    data.recentUsers.forEach(user => {
+                        let badgeCls = "badge-soft-success";
+                        if (user.status === "PENDING") badgeCls = "badge-soft-warning";
+                        if (user.status === "REJECTED") badgeCls = "badge-soft-danger";
+                        
+                        userTable.innerHTML += `
+                            <tr>
+                                <td><div class="fw-bold text-white">${user.full_name}</div></td>
+                                <td><span class="badge badge-soft-info">${user.role}</span></td>
+                                <td><span class="badge ${badgeCls}">${user.status}</span></td>
+                                <td class="text-white-50" style="font-size:0.85rem;"><i class="fa-regular fa-calendar me-1"></i> ${user.created_at}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    userTable.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-white-50">No recent registrations.</td></tr>';
+                }
+
+                // Populate P2P Requests
+                const p2pTable = document.getElementById('p2pRequestsTable');
+                p2pTable.innerHTML = '';
+                if (data.recentP2P && data.recentP2P.length > 0) {
+                    data.recentP2P.forEach(req => {
+                        p2pTable.innerHTML += `
+                            <tr>
+                                <td><div class="fw-bold text-white">${req.requester_name}</div></td>
+                                <td><span class="badge badge-soft-danger fs-6">${req.blood_group}</span></td>
+                                <td><div class="text-white-50">${req.hospital_city}</div></td>
+                                <td>${req.urgency}</td>
+                                <td><span class="badge badge-soft-warning">${req.status}</span></td>
+                                <td class="text-white-50" style="font-size:0.85rem;">${req.created_at}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    p2pTable.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-white-50">No peer-to-peer requests found.</td></tr>';
+                }
+            })
+            .catch(err => console.error('Dashboard Stats Error:', err));
     });
 </script>
 </body>

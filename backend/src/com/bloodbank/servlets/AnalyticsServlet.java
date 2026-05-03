@@ -86,6 +86,8 @@ public class AnalyticsServlet extends HttpServlet {
                 data = getDemandHeatmap(db);
             } else if ("operationalFlux".equalsIgnoreCase(metric)) {
                 data = getOperationalFlux(db);
+            } else if ("dashboardHome".equalsIgnoreCase(metric)) {
+                data = getDashboardHomeStats(db);
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 result.put("error", "Unknown metric");
@@ -99,6 +101,10 @@ public class AnalyticsServlet extends HttpServlet {
             result.put("metric", metric);
             if ("heatmapDemand".equalsIgnoreCase(metric)) {
                 result.put("points", data); // Map expects "points"
+            } else if ("dashboardHome".equalsIgnoreCase(metric)) {
+                // Return the whole object directly for dashboard home
+                out.print(data.toString());
+                return;
             } else {
                 result.put("data", data);
             }
@@ -109,6 +115,62 @@ public class AnalyticsServlet extends HttpServlet {
             result.put("error", "Database error: " + e.getMessage());
             try { response.getWriter().print(result.toString()); } catch (IOException ignored) {}
         }
+    }
+
+    private JSONObject getDashboardHomeStats(Firestore db) throws Exception {
+        JSONObject stats = new JSONObject();
+        
+        // 1. Fire count queries in parallel
+        com.google.api.core.ApiFuture<com.google.cloud.firestore.AggregateQuerySnapshot> fDonors = db.collection("users").whereEqualTo("role", "DONOR").whereEqualTo("status", "APPROVED").count().get();
+        com.google.api.core.ApiFuture<com.google.cloud.firestore.AggregateQuerySnapshot> fBanks = db.collection("blood_banks").whereEqualTo("status", "APPROVED").count().get();
+        com.google.api.core.ApiFuture<com.google.cloud.firestore.AggregateQuerySnapshot> fPending = db.collection("users").whereEqualTo("status", "PENDING").count().get();
+        com.google.api.core.ApiFuture<com.google.cloud.firestore.AggregateQuerySnapshot> fAlerts = db.collection("emergency_alerts").count().get();
+
+        // 2. Fire list queries in parallel
+        com.google.api.core.ApiFuture<QuerySnapshot> fRecentUsers = db.collection("users")
+                .orderBy("created_at", com.google.cloud.firestore.Query.Direction.DESCENDING)
+                .limit(5).get();
+        com.google.api.core.ApiFuture<QuerySnapshot> fP2P = db.collection("peer_requests")
+                .orderBy("created_at", com.google.cloud.firestore.Query.Direction.DESCENDING)
+                .limit(5).get();
+
+        // 3. Collect Results
+        stats.put("totalDonors", fDonors.get().getCount());
+        stats.put("totalBanks", fBanks.get().getCount());
+        stats.put("pendingApprovals", fPending.get().getCount());
+        stats.put("activeAlerts", fAlerts.get().getCount());
+
+        JSONArray usersArr = new JSONArray();
+        for (QueryDocumentSnapshot doc : fRecentUsers.get().getDocuments()) {
+            JSONObject u = new JSONObject();
+            u.put("full_name", doc.getString("full_name"));
+            u.put("role", doc.getString("role"));
+            u.put("status", doc.getString("status"));
+            
+            Object createdObj = doc.get("created_at");
+            if (createdObj instanceof com.google.cloud.Timestamp) {
+                u.put("created_at", ((com.google.cloud.Timestamp) createdObj).toDate().toString());
+            } else {
+                u.put("created_at", createdObj != null ? createdObj.toString() : "N/A");
+            }
+            usersArr.put(u);
+        }
+        stats.put("recentUsers", usersArr);
+
+        JSONArray p2pArr = new JSONArray();
+        for (QueryDocumentSnapshot doc : fP2P.get().getDocuments()) {
+            JSONObject p = new JSONObject();
+            p.put("requester_name", doc.getString("requester_name"));
+            p.put("blood_group", doc.getString("blood_group"));
+            p.put("hospital_city", doc.getString("hospital_city"));
+            p.put("urgency", doc.getString("urgency"));
+            p.put("status", doc.getString("status"));
+            p.put("created_at", doc.getString("created_at"));
+            p2pArr.put(p);
+        }
+        stats.put("recentP2P", p2pArr);
+
+        return stats;
     }
 
     private JSONArray getDonationsByMonth(Firestore db) throws InterruptedException, ExecutionException {

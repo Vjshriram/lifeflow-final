@@ -30,8 +30,8 @@ public class DonorIdServlet extends HttpServlet {
         String donorName = "Hero";
         String bloodGroup = "??";
         long donations = 0;
-        String rank = "Citizen";
-        String rankColor = "#64748b";
+        String rank = "Bronze Lifesaver";
+        String rankColor = "#cd7f32";
 
         try {
             Firestore db = FirebaseConfig.getFirestore();
@@ -42,11 +42,11 @@ public class DonorIdServlet extends HttpServlet {
                 bloodGroup = donorDoc.getString("blood_group");
                 donations = donorDoc.getLong("donation_count");
                 
-                // Determine Rank
-                if (donations >= 25) { rank = "LifeFlow Legend"; rankColor = "#e5e4e2"; }
-                else if (donations >= 10) { rank = "Golden Guardian"; rankColor = "#ffd700"; }
-                else if (donations >= 5) { rank = "Silver Warden"; rankColor = "#c0c0c0"; }
-                else if (donations >= 1) { rank = "Bronze Hero"; rankColor = "#cd7f32"; }
+                // Determine Rank (Synchronized with home.jsp)
+                if (donations >= 10) { rank = "Platinum Guardian"; rankColor = "#e5e4e2"; }
+                else if (donations >= 5) { rank = "Gold Defender"; rankColor = "#ffd700"; }
+                else if (donations >= 3) { rank = "Silver Warden"; rankColor = "#c0c0c0"; }
+                else { rank = "Bronze Lifesaver"; rankColor = "#cd7f32"; }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,7 +92,7 @@ public class DonorIdServlet extends HttpServlet {
             out.println("  <div class='stats'>");
             out.println("    <div class='stat-item'><div class='stat-val'>" + donations + "</div><div class='stat-lbl'>Lifes Saved</div></div>");
             out.println("    <div class='stat-item'><div class='stat-val'>NETWORK</div><div class='stat-lbl'>Membership</div></div>");
-            out.println("    <div class='stat-item'><div class='stat-val'>" + userId.substring(0, 8).toUpperCase() + "</div><div class='stat-lbl'>Hero ID</div></div>");
+            out.println("    <div class='stat-item'><div class='stat-val'>" + userId.substring(0, Math.min(userId.length(), 8)).toUpperCase() + "</div><div class='stat-lbl'>Hero ID</div></div>");
             out.println("  </div>");
             out.println("  <div class='footer'>Valid Globally | LifeFlow Blood Network</div>");
             out.println("</div>");
