@@ -50,19 +50,22 @@ public class AdminApprovalServlet extends HttpServlet {
             Firestore db = FirebaseConfig.getFirestore();
 
             // 1️⃣ Update user status
+            System.out.println("[DEBUG] Updating status for user: " + userId + " to " + newStatus);
             db.collection("users").document(userId).update("status", newStatus).get();
 
-            // 2️⃣ If approved BANK user → create blood bank
+            // 2️⃣ If approved user → trigger email logic
             if ("APPROVED".equalsIgnoreCase(newStatus)) {
                 DocumentSnapshot userDoc = db.collection("users").document(userId).get().get();
 
                 if (userDoc.exists()) {
                     String role = userDoc.getString("role");
+                    String email = userDoc.getString("email");
+                    String fullName = userDoc.getString("full_name");
+                    
+                    System.out.println("[DEBUG] Approval for: " + fullName + " (" + email + ") as " + role);
 
                     if ("BANK".equalsIgnoreCase(role)) {
                         String city = userDoc.getString("city");
-                        String fullName = userDoc.getString("full_name");
-                        String email = userDoc.getString("email");
                         String phone = userDoc.getString("phone");
 
                         // 🌍 Auto-geocode bank city
@@ -89,15 +92,23 @@ public class AdminApprovalServlet extends HttpServlet {
                     }
                     
                     // 📧 Send Welcome Email (Only if not already sent)
-                    String email = userDoc.getString("email");
-                    String fullName = userDoc.getString("full_name");
                     Boolean emailSent = userDoc.getBoolean("welcome_email_sent");
+                    System.out.println("[DEBUG] welcome_email_sent flag: " + emailSent);
                     
                     if (emailSent == null || !emailSent) {
-                        com.bloodbank.util.EmailService.sendWelcomeEmail(email, fullName, role);
-                        // Mark as sent to prevent duplicates
-                        db.collection("users").document(userId).update("welcome_email_sent", true).get();
+                        if (email != null && !email.isEmpty()) {
+                            System.out.println("[DEBUG] Calling sendWelcomeEmail...");
+                            com.bloodbank.util.EmailService.sendWelcomeEmail(email, fullName, role);
+                            // Mark as sent to prevent duplicates
+                            db.collection("users").document(userId).update("welcome_email_sent", true).get();
+                        } else {
+                            System.out.println("[DEBUG] Skipping email: Email address is null or empty");
+                        }
+                    } else {
+                        System.out.println("[DEBUG] Skipping email: Already marked as sent in Firestore");
                     }
+                } else {
+                    System.out.println("[DEBUG] Error: User document not found after status update!");
                 }
             }
 
