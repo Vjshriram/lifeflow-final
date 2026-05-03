@@ -95,7 +95,7 @@
                                             <input type="hidden" name="userId" value="<%= id %>">
                                             <input type="hidden" name="role" value="DONOR">
                                             <input type="hidden" name="email" value="<%= email %>">
-                                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold"><i class="fa-solid fa-trash me-1"></i> Remove</button>
+                                            <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold"><i class="fa-solid fa-trash me-1"></i> Remove</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -230,7 +230,7 @@
                                             <input type="hidden" name="userId" value="<%= id %>">
                                             <input type="hidden" name="role" value="BANK">
                                             <input type="hidden" name="email" value="<%= email %>">
-                                            <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold shadow-sm"><i class="fa-solid fa-trash me-1"></i> Remove</button>
+                                            <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold shadow-sm"><i class="fa-solid fa-trash me-1"></i> Remove</button>
                                         </form>
                                     </td>
                                 </tr>

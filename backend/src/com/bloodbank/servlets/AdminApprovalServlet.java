@@ -88,10 +88,16 @@ public class AdminApprovalServlet extends HttpServlet {
                         com.bloodbank.util.NewsletterService.triggerNewHospitalAlert(fullName, city);
                     }
                     
-                    // 📧 Send Welcome Email (for both Donors and Banks)
+                    // 📧 Send Welcome Email (Only if not already sent)
                     String email = userDoc.getString("email");
                     String fullName = userDoc.getString("full_name");
-                    com.bloodbank.util.EmailService.sendWelcomeEmail(email, fullName, role);
+                    Boolean emailSent = userDoc.getBoolean("welcome_email_sent");
+                    
+                    if (emailSent == null || !emailSent) {
+                        com.bloodbank.util.EmailService.sendWelcomeEmail(email, fullName, role);
+                        // Mark as sent to prevent duplicates
+                        db.collection("users").document(userId).update("welcome_email_sent", true).get();
+                    }
                 }
             }
 
