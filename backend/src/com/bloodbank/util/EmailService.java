@@ -83,7 +83,7 @@ public class EmailService {
             Message message = new MimeMessage(getSession());
             message.setFrom(new InternetAddress(USERNAME, "LifeFlow Support"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(USERNAME));
-            message.setReplyTo(new Address[]{new InternetAddress(fromEmail)});
+            message.setReplyTo(new InternetAddress[]{new InternetAddress(fromEmail)});
             message.setSubject("Support Inquiry from " + fromName);
             message.setContent("<p>From: " + fromName + "</p><p>" + messageBody + "</p>", "text/html");
             Transport.send(message);
