@@ -43,13 +43,15 @@ public class FirebaseConfig {
                 System.out.println("Firebase initialized from local file.");
             }
 
-            if (FirebaseApp.getApps().isEmpty()) {
+            if (FirebaseApp.getApps().isEmpty() && options != null) {
                 FirebaseApp.initializeApp(options);
             }
 
-            firestore = FirestoreClient.getFirestore();
-        } catch (IOException e) {
-            System.err.println("Firebase initialization error: " + e.getMessage());
+            if (!FirebaseApp.getApps().isEmpty()) {
+                firestore = FirestoreClient.getFirestore();
+            }
+        } catch (Exception e) {
+            System.err.println("Firebase initialization safety-trigger: " + e.getMessage());
         }
     }
 

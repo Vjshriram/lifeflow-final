@@ -8,7 +8,8 @@ RUN mvn -f backend/pom.xml clean package -DskipTests
 FROM tomcat:9.0-jdk11-openjdk-slim
 
 # --- RAILWAY OPTIMIZATION: JVM TUNING ---
-ENV JAVA_OPTS="-Xms256m -Xmx768m -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom"
+# Setting max memory to 440MB to stay safely within Railway's 512MB free tier limit
+ENV JAVA_OPTS="-Xms256m -Xmx440m -XX:+UseSerialGC -Djava.security.egd=file:/dev/./urandom"
 
 # Remove default Tomcat webapps
 RUN rm -rf /usr/local/tomcat/webapps/*
