@@ -16,17 +16,29 @@ public class EmailService {
     private static String FROM_NAME;
 
     static {
-        try {
-            java.util.Properties props = new java.util.Properties();
-            java.io.InputStream propStream = EmailService.class.getClassLoader().getResourceAsStream("config.properties");
-            if (propStream != null) {
-                props.load(propStream);
+        // 🎯 PRIORITY 1: Environment Variables (Secure Production Method)
+        USERNAME = System.getenv("GMAIL_USERNAME");
+        PASSWORD = System.getenv("GMAIL_PASSWORD");
+        FROM_NAME = System.getenv("GMAIL_FROM_NAME");
+
+        // 🎯 PRIORITY 2: Config Properties (Local Fallback)
+        if (USERNAME == null || PASSWORD == null) {
+            try {
+                java.util.Properties props = new java.util.Properties();
+                java.io.InputStream propStream = EmailService.class.getClassLoader().getResourceAsStream("config.properties");
+                if (propStream != null) {
+                    props.load(propStream);
+                }
+                if (USERNAME == null) USERNAME = props.getProperty("gmail.username", "lifeflowad@gmail.com");
+                if (PASSWORD == null) PASSWORD = props.getProperty("gmail.password", "jelmkdzvswkpszpt");
+                if (FROM_NAME == null) FROM_NAME = props.getProperty("gmail.from.name", "LifeFlow Emergency Center");
+            } catch (java.io.IOException e) {
+                System.err.println("📧 EmailService: Using default hardcoded credentials (not recommended for production).");
             }
-            USERNAME = props.getProperty("gmail.username", "lifeflowad@gmail.com");
-            PASSWORD = props.getProperty("gmail.password", "jelmkdzvswkpszpt");
-            FROM_NAME = props.getProperty("gmail.from.name", "LifeFlow Emergency Center");
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
+        }
+        
+        if (USERNAME != null) {
+            System.out.println("📧 EmailService: Initialized with user: " + USERNAME);
         }
     }
 
