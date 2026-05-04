@@ -4,20 +4,20 @@ WORKDIR /app
 COPY . .
 RUN mvn -f backend/pom.xml clean package -DskipTests
 
-# Stage 2: Run the app using Jetty (Lighter than Tomcat)
-FROM jetty:9.4-jre11-slim
+# Stage 2: Run the app using Tomcat (Optimized for Railway)
+FROM tomcat:9.0-jdk11-openjdk-slim
 
-# Copy the built classes and web resources directly
-# This ensures no "WAR packaging" issues
-USER root
-RUN rm -rf /var/lib/jetty/webapps/ROOT && mkdir -p /var/lib/jetty/webapps/ROOT
-COPY --from=build /app/web/ /var/lib/jetty/webapps/ROOT/
-COPY --from=build /app/backend/target/classes/ /var/lib/jetty/webapps/ROOT/WEB-INF/classes/
-COPY --from=build /app/backend/target/blood-bank-system/WEB-INF/lib/ /var/lib/jetty/webapps/ROOT/WEB-INF/lib/
+# --- RAILWAY OPTIMIZATION: JVM TUNING ---
+ENV JAVA_OPTS="-Xms256m -Xmx768m -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom"
 
-# Set permissions
-RUN chown -R jetty:jetty /var/lib/jetty/webapps/ROOT
+# Remove default Tomcat webapps
+RUN rm -rf /usr/local/tomcat/webapps/*
 
-USER jetty
+# Copy the built .war file directly (Railway handles unzipping perfectly)
+COPY --from=build /app/backend/target/blood-bank-system.war /usr/local/tomcat/webapps/ROOT.war
+
+# Port 8080
 EXPOSE 8080
 
+# Start the server
+CMD ["catalina.sh", "run"]
