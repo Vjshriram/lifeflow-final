@@ -38,23 +38,28 @@ public class EmailService {
         }
         
         if (USERNAME != null) {
-            System.out.println("📧 EmailService: Initialized with user: " + USERNAME);
+            System.out.println("📧 EmailService: Initialized with user: " + USERNAME + " (Source: Environment)");
+        } else {
+            System.out.println("⚠️ EmailService: WARNING - GMAIL_USERNAME not found in Environment Variables.");
         }
     }
 
-    public static void sendOtpEmail(String toAddress, String otp) {
-        System.out.println("Attempting to send real OTP email to: " + toAddress);
-        System.out.println("=====================================================");
-        System.out.println("🔑 [LOCAL FALLBACK] GENERATED OTP FOR " + toAddress + ": " + otp);
-        System.out.println("=====================================================");
-
+    private static Properties getSmtpProperties() {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
         props.put("mail.smtp.host", SMTP_HOST);
         props.put("mail.smtp.port", SMTP_PORT);
+        props.put("mail.debug", "true"); // 🎯 🔍 Enable full SMTP logging
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        return props;
+    }
 
-        Session session = Session.getInstance(props, new Authenticator() {
+    public static void sendOtpEmail(String toAddress, String otp) {
+        System.out.println("Attempting to send OTP email to: " + toAddress);
+
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
@@ -88,13 +93,7 @@ public class EmailService {
         
         System.out.println("Attempting to send EMERGENCY email broadcast to " + bccEmails.size() + " donors.");
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        Session session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
@@ -146,13 +145,7 @@ public class EmailService {
     public static void sendLifeSavedEmail(String toEmail, String donorName, String bloodGroup) {
         System.out.println("Sending Life Saved celebration email to: " + toEmail);
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        Session session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
@@ -195,13 +188,7 @@ public class EmailService {
     public static void sendSupportEmail(String fromName, String fromEmail, String messageBody) {
         System.out.println("Attempting to send Support Inquiry from: " + fromEmail + " to Admin.");
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        Session session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
@@ -239,13 +226,7 @@ public class EmailService {
         
         System.out.println("Attempting to send Community Blood Request broadcast to " + bccEmails.size() + " matching donors.");
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        Session session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
@@ -396,13 +377,7 @@ public class EmailService {
     public static void sendNewsletterConfirmationEmail(String toEmail) {
         System.out.println("Sending Newsletter Confirmation to: " + toEmail);
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        Session session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
@@ -436,14 +411,7 @@ public class EmailService {
         }
     }
 
-    private static void sendBroadcast(java.util.List<String> bccEmails, String subject, String htmlBody) {
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        Session session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
@@ -473,13 +441,7 @@ public class EmailService {
     public static void sendWelcomeEmail(String toEmail, String fullName, String role) {
         System.out.println("Sending Welcome email to: " + toEmail + " (Role: " + role + ")");
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        Session session = Session.getInstance(props, new Authenticator() {
+        Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
