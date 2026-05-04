@@ -5,7 +5,7 @@ COPY . .
 RUN mvn -f backend/pom.xml clean package -DskipTests
 
 # Stage 2: Run the app using Tomcat (Optimized for Railway)
-FROM tomcat:9.0-jdk17-openjdk-slim
+FROM tomcat:9.0.83-jdk17-temurin-jammy
 
 # --- RAILWAY OPTIMIZATION: JVM TUNING ---
 # Setting max memory to 440MB to stay safely within Railway's 512MB free tier limit
