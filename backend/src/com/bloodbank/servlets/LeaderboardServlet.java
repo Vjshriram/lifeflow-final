@@ -32,17 +32,16 @@ public class LeaderboardServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Firestore db = FirebaseConfig.getFirestore();
 
-            System.out.println("🔍 Leaderboard: Querying Firestore for DONORs...");
-            // Simplified Query: Single-field indexable to avoid 'Missing Index' errors
+            System.out.println("🔍 Leaderboard: Querying all DONORs (safe mode)...");
+            // 🎯 IMMEDIATE FIX: Remove orderBy to prevent Firestore from filtering out users with missing fields
             Query query = db.collection("users")
                     .whereEqualTo("role", "DONOR")
-                    .orderBy("donation_count", Query.Direction.DESCENDING)
-                    .limit(50);
+                    .limit(100);
 
             QuerySnapshot querySnapshot = query.get().get();
-            System.out.println("📊 Leaderboard: Found " + querySnapshot.size() + " potential candidates.");
+            System.out.println("📊 Leaderboard: Found " + querySnapshot.size() + " total donors.");
             
-            JSONArray leaderboardArr = new JSONArray();
+            List<JSONObject> donorList = new ArrayList<>();
 
             for (QueryDocumentSnapshot document : querySnapshot.getDocuments()) {
                 Long countObj = document.getLong("donation_count");
@@ -50,9 +49,6 @@ public class LeaderboardServlet extends HttpServlet {
                 
                 String name = document.getString("full_name");
                 System.out.println("👤 Leaderboard: Processing " + name + " (Donations: " + count + ")");
-                
-                // Skip zeros in Java to keep query simple
-                if (count <= 0) continue;
                 
                 JSONObject donor = new JSONObject();
                 donor.put("id", document.getId());
@@ -71,7 +67,15 @@ public class LeaderboardServlet extends HttpServlet {
                     donor.put("badgeIcon", "fa-star");
                 }
 
-                leaderboardArr.put(donor);
+                donorList.add(donor);
+            }
+
+            // 🏆 Sort the list by count (Descending) in Java
+            donorList.sort((a, b) -> Long.compare(b.getLong("count"), a.getLong("count")));
+
+            JSONArray leaderboardArr = new JSONArray();
+            for (JSONObject d : donorList) {
+                leaderboardArr.put(d);
             }
 
             JSONObject result = new JSONObject();
