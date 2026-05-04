@@ -31,6 +31,7 @@ public class LeaderboardServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Firestore db = FirebaseConfig.getFirestore();
 
+            System.out.println("🔍 Leaderboard: Querying Firestore for DONORs...");
             // Simplified Query: Single-field indexable to avoid 'Missing Index' errors
             Query query = db.collection("users")
                     .whereEqualTo("role", "DONOR")
@@ -38,18 +39,21 @@ public class LeaderboardServlet extends HttpServlet {
                     .limit(50);
 
             QuerySnapshot querySnapshot = query.get().get();
+            System.out.println("📊 Leaderboard: Found " + querySnapshot.size() + " potential candidates.");
+            
             JSONArray leaderboardArr = new JSONArray();
 
             for (QueryDocumentSnapshot document : querySnapshot.getDocuments()) {
                 Long countObj = document.getLong("donation_count");
                 long count = (countObj != null) ? countObj : 0;
                 
+                String name = document.getString("full_name");
+                System.out.println("👤 Leaderboard: Processing " + name + " (Donations: " + count + ")");
+                
                 // Skip zeros in Java to keep query simple
                 if (count <= 0) continue;
                 
                 JSONObject donor = new JSONObject();
-                String name = document.getString("full_name");
-                
                 donor.put("id", document.getId());
                 donor.put("name", name != null ? name : "Anonymous Donor");
                 donor.put("count", count);

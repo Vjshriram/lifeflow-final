@@ -59,17 +59,23 @@ public class ChatServlet extends HttpServlet {
         String role     = (session != null) ? (String) session.getAttribute("role") : null;
 
         String msg = request.getParameter("message");
-
         response.setContentType("application/json");
-
         JSONObject result = new JSONObject();
 
         try (PrintWriter out = response.getWriter()) {
+            System.out.println("🤖 Chatbot: Incoming message from " + (fullName != null ? fullName : "Anonymous"));
+            
+            if (apiKey == null || apiKey.isEmpty()) {
+                System.err.println("❌ Chatbot: GEMINI_API_KEY IS MISSING!");
+            }
+
             if (msg == null || msg.trim().isEmpty()) {
                 result.put("reply", "I'm listening, " + (fullName != null ? fullName : "Hero") + ". How can I assist you today?");
             } else {
+                System.out.println("🧠 Chatbot: Dispatching to Gemini...");
                 String reply = generateGeminiResponse(msg, fullName, role);
                 result.put("reply", reply);
+                System.out.println("✅ Chatbot: Response received.");
             }
             out.print(result.toString());
         }

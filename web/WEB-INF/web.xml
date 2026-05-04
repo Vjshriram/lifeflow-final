@@ -46,6 +46,16 @@
         <url-pattern>/api/intelligence-briefing</url-pattern>
     </servlet-mapping>
 
+    <!-- ================= LEADERBOARD ================= -->
+    <servlet>
+        <servlet-name>LeaderboardServlet</servlet-name>
+        <servlet-class>com.bloodbank.servlets.LeaderboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LeaderboardServlet</servlet-name>
+        <url-pattern>/api/leaderboard</url-pattern>
+    </servlet-mapping>
+
     <!-- ================= CHATBOT Neural Engine ================= -->
     <servlet>
         <servlet-name>ChatServlet</servlet-name>
