@@ -20,16 +20,38 @@ public class FirebaseConfig {
         if (firestore != null) return;
 
         try {
-            // Loading from Classpath Resource (Bundled in WAR)
-            java.io.InputStream serviceAccount = FirebaseConfig.class.getResourceAsStream("/firebase-key.json");
+            System.out.println("🔍 Firebase: Attempting to load firebase-key.json...");
+            java.io.InputStream serviceAccount = null;
             
-            if (serviceAccount == null) {
-                // Try without leading slash
+            // Strategy 1: Class resource
+            serviceAccount = FirebaseConfig.class.getResourceAsStream("/firebase-key.json");
+            if (serviceAccount != null) {
+                System.out.println("✅ Firebase: Found key via getResourceAsStream('/')");
+            } else {
+                // Strategy 2: Classloader resource
                 serviceAccount = FirebaseConfig.class.getClassLoader().getResourceAsStream("firebase-key.json");
+                if (serviceAccount != null) {
+                    System.out.println("✅ Firebase: Found key via getClassLoader().getResourceAsStream()");
+                } else {
+                    // Strategy 3: Absolute path on Railway/Tomcat
+                    java.io.File absoluteFile = new java.io.File("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/firebase-key.json");
+                    if (absoluteFile.exists()) {
+                        serviceAccount = new java.io.FileInputStream(absoluteFile);
+                        System.out.println("✅ Firebase: Found key via absolute path");
+                    }
+                }
             }
 
             if (serviceAccount == null) {
-                throw new java.io.FileNotFoundException("Firebase key file not found in classpath!");
+                System.err.println("❌ Firebase: FAILED to find firebase-key.json in ANY location.");
+                // Debug: List files in common locations
+                try {
+                    java.io.File classesDir = new java.io.File("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes");
+                    if (classesDir.exists()) {
+                        System.out.println("📁 Files in classes dir: " + java.util.Arrays.toString(classesDir.list()));
+                    }
+                } catch (Exception ignored) {}
+                throw new java.io.FileNotFoundException("Firebase key file not found!");
             }
 
             FirebaseOptions options = FirebaseOptions.builder()
@@ -40,9 +62,9 @@ public class FirebaseConfig {
                 FirebaseApp.initializeApp(options);
             }
             firestore = FirestoreClient.getFirestore();
-            System.out.println("✅ Firebase initialized successfully from local file.");
+            System.out.println("🚀 Firebase: Successfully initialized Firestore!");
         } catch (Exception e) {
-            System.err.println("❌ Firebase initialization failed: " + e.getMessage());
+            System.err.println("❌ Firebase: Initialization Error: " + e.getMessage());
             e.printStackTrace();
         }
     }
