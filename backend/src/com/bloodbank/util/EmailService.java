@@ -7,7 +7,7 @@ import java.util.Properties;
 
 public class EmailService {
 
-    private static final String SMTP_HOST = "smtp.gmail.com";
+    private static final String SMTP_HOST = "smtp.googlemail.com";
     private static final String SMTP_PORT = "465";
     private static String USERNAME; 
     private static String PASSWORD;
@@ -33,6 +33,11 @@ public class EmailService {
             }
         }
         System.out.println("📧 EmailService: Initialized with " + USERNAME);
+        if (PASSWORD != null) {
+            System.out.println("📧 EmailService: Password loaded (Length: " + PASSWORD.length() + ")");
+        } else {
+            System.out.println("⚠️ EmailService: PASSWORD IS NULL!");
+        }
     }
 
     private static Properties getSmtpProperties() {
@@ -42,6 +47,8 @@ public class EmailService {
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.ssl.enable", "true");
         props.put("mail.smtp.user", USERNAME);
+        props.put("mail.smtp.connectiontimeout", "15000"); // 15 seconds
+        props.put("mail.smtp.timeout", "15000");
         props.put("mail.debug", "true");
         props.put("mail.smtp.ssl.protocols", "TLSv1.2");
         return props;
