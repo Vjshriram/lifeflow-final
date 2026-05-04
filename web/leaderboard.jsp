@@ -259,125 +259,24 @@
 
 <%@ include file="/WEB-INF/fragments/footer.jspf" %>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBwXhgtNkvU_NZdo7f1lH0d3rhpeC4L6hU",
-        authDomain: "lifeflow-30d1a.firebaseapp.com",
-        projectId: "lifeflow-30d1a",
-        storageBucket: "lifeflow-30d1a.appspot.com",
-        messagingSenderId: "715011188489",
-        appId: "1:715011188489:web:99155d5421d27c46c295d8"
-    };
-
-    let db = null;
-    try {
-        const app = firebase.initializeApp(firebaseConfig);
-        db = firebase.firestore(app);
-    } catch(e) { console.error(e); }
-
-    function getInitials(name) {
-        return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'D';
-    }
-
-    function getBadge(count) {
-        if (count >= 20) return { name: "Life Saver", icon: "fa-crown", class: "life-saver" };
-        if (count >= 10) return { name: "Top Donor", icon: "fa-award", class: "top-donor" };
-        if (count >= 5) return { name: "Regular Donor", icon: "fa-star", class: "" };
-        return null;
-    }
-
-    function renderLeaderboard(donors) {
-        const podiumContainer = document.getElementById('podiumContent');
-        const listContainer = document.getElementById('listContent');
-
-        if (!donors || donors.length === 0) return;
-
-        // --- Render Podium (Top 3) ---
-        const top3 = donors.slice(0, 3);
-        let podiumHtml = '';
-        top3.forEach((donor, i) => {
-            const rank = i + 1;
-            const badge = getBadge(donor.count);
-            podiumHtml += `
-                <div class="podium-item podium-\${rank}" style="transition-delay: \${i * 200}ms">
-                    <div class="podium-avatar">
-                        \${getInitials(donor.name)}
-                        <div class="rank-badge">\${rank}</div>
-                    </div>
-                    <div class="text-white fw-bold fs-5 mb-0">\${donor.name}</div>
-                    <div class="text-secondary small mb-3">\${donor.count} \${donor.count === 1 ? 'Donation' : 'Donations'}</div>
-                    <div class="pillar">
-                        \${badge ? `<div class="badge-pill \${badge.class}"><i class="fa-solid \${badge.icon}"></i> \${badge.name}</div>` : ''}
-                    </div>
-                </div>
-            `;
-        });
-        podiumContainer.innerHTML = podiumHtml;
-        // Trigger animation
-        setTimeout(() => {
-            document.querySelectorAll('.podium-item').forEach(el => el.classList.add('show'));
-        }, 100);
-
-        // --- Render List (4th - End) ---
-        const others = donors.slice(3);
-        let listHtml = '';
-        if (others.length === 0) {
-            listHtml = '<div class="text-center py-5 text-secondary">Join the elites in the Hall of Fame today!</div>';
-        } else {
-            others.forEach((donor, i) => {
-                const rank = i + 4;
-                const badge = getBadge(donor.count);
-                listHtml += `
-                    <div class="list-row">
-                        <div class="list-rank">#\${rank}</div>
-                        <div class="list-avatar">\${getInitials(donor.name)}</div>
-                        <div class="list-info">
-                            <div class="text-white fw-bold">\${donor.name}</div>
-                            \${badge ? `<div class="badge-pill \${badge.class}"><i class="fa-solid \${badge.icon}"></i> \${badge.name}</div>` : ''}
-                        </div>
-                        <div class="list-count">
-                            \${donor.count}
-                            <div class="small text-secondary fw-normal" style="font-size: 0.6rem">\${donor.count === 1 ? 'DONATION' : 'DONATIONS'}</div>
-                        </div>
-                    </div>
-                `;
-            });
+    // Use the secure server-side bridge instead of client-side Firebase
+    async function loadLeaderboard() {
+        try {
+            const response = await fetch('<%=request.getContextPath()%>/api/leaderboard');
+            const data = await response.json();
+            
+            if (data.success) {
+                renderLeaderboard(data.leaderboard);
+            } else {
+                console.error("Leaderboard Error:", data.message);
+            }
+        } catch (e) {
+            console.error("Failed to fetch leaderboard:", e);
         }
-        listContainer.innerHTML = listHtml;
     }
 
-    // Real-time listener
-    if (db) {
-        db.collection("users")
-          .where("donation_count", ">", 0)
-          .onSnapshot((qs) => {
-            const donors = [];
-            qs.forEach((doc) => {
-                const data = doc.data();
-                if (data.role === "DONOR") {
-                    donors.push({
-                        name: data.full_name,
-                        count: data.donation_count,
-                        createdAt: data.created_at || '2000-01-01' // Fallback
-                    });
-                }
-            });
-            
-            // Sort by count (desc) and then by createdAt (asc)
-            donors.sort((a, b) => {
-                if (b.count !== a.count) return b.count - a.count;
-                return a.createdAt.localeCompare(b.createdAt);
-            });
-            
-            renderLeaderboard(donors);
-          }, (err) => {
-              console.error(err);
-          });
-    }
+    // Initial load
+    loadLeaderboard();
 </script>
 
 </body>
