@@ -14,48 +14,38 @@ public class FirebaseConfig {
 
     private static Firestore firestore;
 
-    static {
+    private static synchronized void initialize() {
+        if (firestore != null) return;
+
         try {
-            FirebaseOptions options;
+            FirebaseOptions options = null;
             String jsonConfig = System.getenv("FIREBASE_CONFIG");
 
             if (jsonConfig != null && !jsonConfig.isEmpty()) {
-                // Initialize from environment variable (Secure Production Method)
                 options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(jsonConfig.getBytes())))
                         .build();
-                System.out.println("Firebase initialized from environment variable.");
+                System.out.println("Firebase: Initializing from environment variable...");
             } else {
-                // Fallback to local file (Local Development Method)
-                String serviceAccountPath = "lifeflow-30d1a-firebase-adminsdk-fbsvc-387a43696d.json";
-                java.net.URL resource = FirebaseConfig.class.getClassLoader().getResource(serviceAccountPath);
-                
-                java.io.InputStream serviceAccount;
-                if (resource != null) {
-                    serviceAccount = resource.openStream();
-                } else {
-                    serviceAccount = new FileInputStream(serviceAccountPath);
+                System.err.println("Firebase: FIREBASE_CONFIG variable is MISSING!");
+            }
+
+            if (options != null) {
+                if (FirebaseApp.getApps().isEmpty()) {
+                    FirebaseApp.initializeApp(options);
                 }
-
-                options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .build();
-                System.out.println("Firebase initialized from local file.");
-            }
-
-            if (FirebaseApp.getApps().isEmpty() && options != null) {
-                FirebaseApp.initializeApp(options);
-            }
-
-            if (!FirebaseApp.getApps().isEmpty()) {
                 firestore = FirestoreClient.getFirestore();
+                System.out.println("✅ Firebase initialized successfully.");
             }
         } catch (Exception e) {
-            System.err.println("Firebase initialization safety-trigger: " + e.getMessage());
+            System.err.println("❌ Firebase initialization failed: " + e.getMessage());
         }
     }
 
     public static Firestore getFirestore() {
+        if (firestore == null) {
+            initialize();
+        }
         return firestore;
     }
 }
