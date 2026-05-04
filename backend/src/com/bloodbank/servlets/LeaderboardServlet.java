@@ -32,18 +32,23 @@ public class LeaderboardServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Firestore db = FirebaseConfig.getFirestore();
 
-            System.out.println("🔍 Leaderboard: Querying all DONORs (safe mode)...");
-            // 🎯 IMMEDIATE FIX: Remove orderBy to prevent Firestore from filtering out users with missing fields
-            Query query = db.collection("users")
-                    .whereEqualTo("role", "DONOR")
-                    .limit(100);
+            System.out.println("🔍 Leaderboard: Querying users (Mega-Safe Mode)...");
+            // 🎯 MEGA-FIX: Query all users and filter role in Java to handle case-sensitivity (DONOR vs donor)
+            Query query = db.collection("users").limit(200);
 
             QuerySnapshot querySnapshot = query.get().get();
-            System.out.println("📊 Leaderboard: Found " + querySnapshot.size() + " total donors.");
+            System.out.println("📊 Leaderboard: Analyzing " + querySnapshot.size() + " total records.");
             
             List<JSONObject> donorList = new ArrayList<>();
 
             for (QueryDocumentSnapshot document : querySnapshot.getDocuments()) {
+                String userRole = document.getString("role");
+                
+                // Only process Donors
+                if (userRole == null || !userRole.equalsIgnoreCase("DONOR")) {
+                    continue; 
+                }
+
                 Long countObj = document.getLong("donation_count");
                 long count = (countObj != null) ? countObj : 0;
                 
