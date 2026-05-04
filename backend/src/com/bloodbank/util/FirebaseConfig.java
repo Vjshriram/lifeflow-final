@@ -20,12 +20,16 @@ public class FirebaseConfig {
         if (firestore != null) return;
 
         try {
-            // Loading from local file to guarantee zero character corruption
-            java.io.InputStream serviceAccount = FirebaseConfig.class.getClassLoader().getResourceAsStream("firebase-key.json");
+            // Loading from Classpath Resource (Bundled in WAR)
+            java.io.InputStream serviceAccount = FirebaseConfig.class.getResourceAsStream("/firebase-key.json");
             
             if (serviceAccount == null) {
-                // Fallback for some container configurations
-                serviceAccount = new java.io.FileInputStream(new java.io.File("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/firebase-key.json"));
+                // Try without leading slash
+                serviceAccount = FirebaseConfig.class.getClassLoader().getResourceAsStream("firebase-key.json");
+            }
+
+            if (serviceAccount == null) {
+                throw new java.io.FileNotFoundException("Firebase key file not found in classpath!");
             }
 
             FirebaseOptions options = FirebaseOptions.builder()
