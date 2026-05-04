@@ -21,9 +21,9 @@ public class FirebaseConfig {
             FirebaseOptions options = null;
             String jsonConfig = System.getenv("FIREBASE_CONFIG");
 
-            if (jsonConfig != null && !jsonConfig.isEmpty()) {
+            if (jsonConfig != null && !jsonConfig.trim().isEmpty()) {
                 options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(jsonConfig.getBytes())))
+                        .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(jsonConfig.trim().getBytes())))
                         .build();
                 System.out.println("Firebase: Initializing from environment variable...");
             } else {
