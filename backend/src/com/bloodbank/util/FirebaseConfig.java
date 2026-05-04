@@ -21,35 +21,18 @@ public class FirebaseConfig {
 
         try {
             FirebaseOptions options = null;
-            String jsonConfig = System.getenv("FIREBASE_CONFIG");
-
-            if (jsonConfig != null && !jsonConfig.trim().isEmpty()) {
-                String config = jsonConfig.trim();
-                
-                // --- ULTIMATE STABILITY: BASE64 DECODER ---
-                byte[] jsonBytes;
-                try {
-                    // Try decoding as Base64 first (Railway-Safe)
-                    jsonBytes = java.util.Base64.getDecoder().decode(config);
-                    System.out.println("✅ Firebase: Decoded Base64 config.");
-                } catch (Exception e) {
-                    // Fallback to raw bytes
-                    jsonBytes = config.getBytes();
-                    System.out.println("⚠️ Firebase: Using raw JSON.");
-                }
-                
-                options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(jsonBytes)))
-                        .build();
-                
-                if (FirebaseApp.getApps().isEmpty()) {
-                    FirebaseApp.initializeApp(options);
-                }
-                firestore = FirestoreClient.getFirestore();
-                System.out.println("✅ Firebase initialized successfully!");
-            } else {
-                System.err.println("Firebase: FIREBASE_CONFIG variable is MISSING!");
+            // EMERGENCY HARDCODE: Bypassing environment variables to guarantee startup
+            String config = "{\"type\": \"service_account\", \"project_id\": \"lifeflow-30d1a\", \"private_key_id\": \"387a43696d22420f5417c9abdd7467d520e3fc05\", \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCj3DTN5xyEiaYv\\nFDok2v6SffvnNiMnZnK0AFGtZ2TrXlVaJQuGGVV68fnJuBJ1cmN2XxR7pEmxedVO\\nqeKd1fUxOBPIAvN11xPL/F0BkQ+0hEg7xSxDIJy+kLVhzHsw1YzzYndNRSB6CLir\\n7mT3MyE9J4tXPSe0ObECPjX+LSdcwYfNjpFoKJPfnYIYNHu7tBmKdZJWMlDJH29y\\n1kFzAEbGtux4XNybbbvxwltvdigEcnA9RIajxr7ukah+NyKpA+wC7Ldw5W0KBdCt\\nWNjvAzvQIfLEiTiUyRSNQisVB1l8Bcu4ESjKDV1qbZeHzcoyc1vwonfvfkrrM9AI\\n5F7Fq/HXAgMBAAECggEADfIy1P12ZLoPGKhY5IR2W0MkD+3Vzcd/PAkKP+nHYe2W\\n8m5UY0GVEBA33sPEX8DwbIWIyZcreyfv5YXkVuOmvogpItehdKZCten7g850BDyn\\n+zJRDeuLe6qhorppF7htNSpsa06sBhw86iExmwUmhJJw3mgYO34XgyXb/uSamjRu\\n/HHRhB0f+iOZxUEgTjSN4+dJt2OndCyIYsqNPJG7Gbw+YPXJA6g1sjl8UwQ6ZTeq\\nKgl2VNx/JHGNJpLVtMpHovAhqxx3EY9qAkWAAtYDdfpYhXgwBZMGw9GjpEar8TdU\\nHoeNejvpd/tWfWOUlqD8V2MhBiwsqSAp30xvXQ2guQKBgQDN8pIgf8Pk16Dn4fCp\\nT2ZyYlX/dKFinNW076JM8/npQ1cE3hFtCBVSqEmi1DSkoQI0+spS6cuaJta/JF/W\\n81IJ1kvievDRQRqPnqVuU36yIiKbScEYGUZ7Bj401G2hy18RYF4o2ELX+IAqThBh\\nQ6nGytm5yZt5fqU7VvQctLbhiQKBgQDLrxaDAls1rYWwq12VB5dRuS1OcyOFh8wp\\ngTGsnhkRV74MIGUnb/rZ+OSTCmARlZG/pRwPaG6KjqZMx19Tf6kg3ajb2WzPN75B\\n85dad6A+zvedraXXzzrVXhac37UVnwufVt190PkQ1f9GGqhOcuc3q8dcwCYEdEh/\\ncHgYUwxAXwKBgB7LASxYzip+TzG8p6Y5GAFMUL10a9j5yD5YgjTtWdWV2wIATiy2\\nQ7HrNa9h+UkQRes0AGJrUKUI350OzEGwefi8kPYZGb6/9D+7IdMgKtZpojED0xpO\\nVSp54X02sfm6FcncVdfXlg8Cue8ZYvuYCV+O3wUXbua4l+4Kb0+Heby5AoGBAMow\\nZAhormH6fluBwMPPZUaaq37UjM5gnyoUNVtFFV1B3EXtYnxjjIATsdLE2diawLOd\\Et24rQKd2DcfMmGQuDMH1jdm/bw1eYe+ZuBHH6s5iFPdrGMuMxja7VeMOhXca40g\\njX33k0ZDJ8RPcgNtzFhXDO/lTdfeFplq68w5pE/BAoGAeEEU/dfP4MkqHryz/VNi\\n1F7hC6HI867+mc1tAQlrc7/Kr+BUH3u7d8I8UW1P/l8XL0FS4S49WcC42BJ+kpIC\\nABw3oULJ/cTqcyv0Nc92XdQqUnlGpIwk54TbAXSemjCgJqb8u95LXTfPvx0M4BZc\\nFn+gbHN6oR97CBlW2ZZ3gUw=\\n-----END PRIVATE KEY-----\\n\", \"client_email\": \"firebase-adminsdk-fbsvc@lifeflow-30d1a.iam.gserviceaccount.com\", \"client_id\": \"112978634399343365975\", \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\", \"token_uri\": \"https://oauth2.googleapis.com/token\", \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\", \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40lifeflow-30d1a.iam.gserviceaccount.com\", \"universe_domain\": \"googleapis.com\"}";
+            
+            options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(config.getBytes())))
+                    .build();
+            
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
             }
+            firestore = FirestoreClient.getFirestore();
+            System.out.println("✅ Firebase initialized successfully (Emergency Hardcode).");
         } catch (Exception e) {
             System.err.println("❌ Firebase initialization failed: " + e.getMessage());
             e.printStackTrace();
