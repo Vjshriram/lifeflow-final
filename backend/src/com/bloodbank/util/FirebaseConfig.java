@@ -25,24 +25,28 @@ public class FirebaseConfig {
             if (jsonConfig != null && !jsonConfig.trim().isEmpty()) {
                 String config = jsonConfig.trim();
                 
-                // Use Google's own JSON parser (already in your dependencies)
-                com.google.api.client.json.JsonFactory jsonFactory = com.google.api.client.json.gson.GsonFactory.getDefaultInstance();
-                com.google.api.client.json.JsonParser parser = jsonFactory.createJsonParser(config);
-                
-                // Load it directly as a Map
-                java.util.Map<String, Object> map = new java.util.HashMap<>();
-                map = parser.parse(map.getClass());
+                // --- ULTIMATE STABILITY: BASE64 DECODER ---
+                // We first try to decode as Base64. This is the only way to be 100% safe 
+                // from Railway's character escaping issues.
+                byte[] jsonBytes;
+                try {
+                    jsonBytes = java.util.Base64.getDecoder().decode(config);
+                    System.out.println("✅ Firebase: Decoded Base64 configuration.");
+                } catch (Exception e) {
+                    // If not Base64, fallback to raw bytes (but this is where escapes usually fail)
+                    jsonBytes = config.getBytes();
+                    System.out.println("⚠️ Firebase: Using raw JSON (Base64 fallback).");
+                }
                 
                 options = FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(config.getBytes())))
-                        .setProjectId((String) map.get("project_id"))
+                        .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(jsonBytes)))
                         .build();
                 
                 if (FirebaseApp.getApps().isEmpty()) {
                     FirebaseApp.initializeApp(options);
                 }
                 firestore = FirestoreClient.getFirestore();
-                System.out.println("✅ Firebase initialized successfully using Official Parser.");
+                System.out.println("✅ Firebase initialized successfully!");
             } else {
                 System.err.println("Firebase: FIREBASE_CONFIG variable is MISSING!");
             }
