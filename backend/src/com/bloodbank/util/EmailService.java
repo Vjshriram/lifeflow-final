@@ -8,7 +8,7 @@ import java.util.Properties;
 public class EmailService {
 
     private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final String SMTP_PORT = "587";
+    private static final String SMTP_PORT = "465";
     private static String USERNAME; 
     private static String PASSWORD;
     private static String FROM_NAME;
@@ -38,11 +38,12 @@ public class EmailService {
     private static Properties getSmtpProperties() {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.starttls.required", "true");
         props.put("mail.smtp.host", SMTP_HOST);
         props.put("mail.smtp.port", SMTP_PORT);
-        props.put("mail.debug", "true"); 
+        props.put("mail.smtp.socketFactory.port", SMTP_PORT);
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.socketFactory.fallback", "false");
+        props.put("mail.debug", "true");
         props.put("mail.smtp.ssl.protocols", "TLSv1.2");
         return props;
     }
