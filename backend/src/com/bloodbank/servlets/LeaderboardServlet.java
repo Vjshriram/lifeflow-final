@@ -31,22 +31,24 @@ public class LeaderboardServlet extends HttpServlet {
         try (PrintWriter out = response.getWriter()) {
             Firestore db = FirebaseConfig.getFirestore();
 
-            // Query donors with donation_count > 0
-            // Note: Efficient sorting on server side
+            // Simplified Query: Single-field indexable to avoid 'Missing Index' errors
             Query query = db.collection("users")
                     .whereEqualTo("role", "DONOR")
-                    .whereGreaterThan("donation_count", 0)
                     .orderBy("donation_count", Query.Direction.DESCENDING)
-                    .orderBy("created_at", Query.Direction.ASCENDING) // Tie-breaker: earlier join date
                     .limit(50);
 
             QuerySnapshot querySnapshot = query.get().get();
             JSONArray leaderboardArr = new JSONArray();
 
             for (QueryDocumentSnapshot document : querySnapshot.getDocuments()) {
+                Long countObj = document.getLong("donation_count");
+                long count = (countObj != null) ? countObj : 0;
+                
+                // Skip zeros in Java to keep query simple
+                if (count <= 0) continue;
+                
                 JSONObject donor = new JSONObject();
                 String name = document.getString("full_name");
-                long count = document.getLong("donation_count");
                 
                 donor.put("id", document.getId());
                 donor.put("name", name != null ? name : "Anonymous Donor");

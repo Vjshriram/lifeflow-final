@@ -48,12 +48,12 @@
 
     <!-- ================= CHATBOT Neural Engine ================= -->
     <servlet>
-        <servlet-name>ChatbotServlet</servlet-name>
-        <servlet-class>com.bloodbank.servlets.ChatbotServlet</servlet-class>
+        <servlet-name>ChatServlet</servlet-name>
+        <servlet-class>com.bloodbank.servlets.ChatServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ChatbotServlet</servlet-name>
-        <url-pattern>/api/chatbot</url-pattern>
+        <servlet-name>ChatServlet</servlet-name>
+        <url-pattern>/api/chat</url-pattern>
     </servlet-mapping>
 
     <!-- ================= JSP CONFIGURATION ================= -->
