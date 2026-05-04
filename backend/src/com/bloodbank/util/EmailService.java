@@ -411,6 +411,7 @@ public class EmailService {
         }
     }
 
+    private static void sendBroadcast(java.util.List<String> bccEmails, String subject, String htmlBody) {
         Session session = Session.getInstance(getSmtpProperties(), new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
