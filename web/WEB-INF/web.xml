@@ -53,7 +53,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>LeaderboardServlet</servlet-name>
-        <url-pattern>/api/leaderboard</url-pattern>
+        <url-pattern>/LeaderboardData</url-pattern>
     </servlet-mapping>
 
     <!-- ================= CHATBOT Neural Engine ================= -->

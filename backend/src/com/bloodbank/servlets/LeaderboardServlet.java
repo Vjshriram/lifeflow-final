@@ -18,14 +18,15 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "LeaderboardServlet", urlPatterns = {"/api/leaderboard"})
+@WebServlet(name = "LeaderboardServlet", urlPatterns = {"/LeaderboardData"})
 public class LeaderboardServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        System.out.println("🚀 Leaderboard: GET Request received at /api/leaderboard");
+        System.out.println("🚀 Leaderboard: GET Request received at /LeaderboardData");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
