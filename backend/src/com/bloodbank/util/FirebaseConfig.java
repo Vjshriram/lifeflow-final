@@ -20,51 +20,39 @@ public class FirebaseConfig {
         if (firestore != null) return;
 
         try {
-            System.out.println("🔍 Firebase: Attempting to load firebase-key.json...");
-            java.io.InputStream serviceAccount = null;
+            System.out.println("🔍 Firebase: Attempting to load stealth key (firebase-key.txt)...");
+            java.io.InputStream encodedStream = FirebaseConfig.class.getResourceAsStream("/firebase-key.txt");
             
-            // Strategy 1: Class resource
-            serviceAccount = FirebaseConfig.class.getResourceAsStream("/firebase-key.json");
-            if (serviceAccount != null) {
-                System.out.println("✅ Firebase: Found key via getResourceAsStream('/')");
-            } else {
-                // Strategy 2: Classloader resource
-                serviceAccount = FirebaseConfig.class.getClassLoader().getResourceAsStream("firebase-key.json");
-                if (serviceAccount != null) {
-                    System.out.println("✅ Firebase: Found key via getClassLoader().getResourceAsStream()");
-                } else {
-                    // Strategy 3: Absolute path on Railway/Tomcat
-                    java.io.File absoluteFile = new java.io.File("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/firebase-key.json");
-                    if (absoluteFile.exists()) {
-                        serviceAccount = new java.io.FileInputStream(absoluteFile);
-                        System.out.println("✅ Firebase: Found key via absolute path");
-                    }
-                }
+            if (encodedStream == null) {
+                encodedStream = FirebaseConfig.class.getClassLoader().getResourceAsStream("firebase-key.txt");
             }
 
-            if (serviceAccount == null) {
-                System.err.println("❌ Firebase: FAILED to find firebase-key.json in ANY location.");
-                // Debug: List files in common locations
-                try {
-                    java.io.File classesDir = new java.io.File("/usr/local/tomcat/webapps/ROOT/WEB-INF/classes");
-                    if (classesDir.exists()) {
-                        System.out.println("📁 Files in classes dir: " + java.util.Arrays.toString(classesDir.list()));
-                    }
-                } catch (Exception ignored) {}
-                throw new java.io.FileNotFoundException("Firebase key file not found!");
+            if (encodedStream == null) {
+                throw new java.io.FileNotFoundException("Stealth key file not found!");
             }
+
+            // Read all bytes and decode from Base64
+            java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[1024];
+            while ((nRead = encodedStream.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            
+            byte[] decodedJson = java.util.Base64.getDecoder().decode(buffer.toString().trim());
+            System.out.println("✅ Firebase: Stealth key decoded successfully.");
 
             FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setCredentials(GoogleCredentials.fromStream(new java.io.ByteArrayInputStream(decodedJson)))
                     .build();
             
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
             }
             firestore = FirestoreClient.getFirestore();
-            System.out.println("🚀 Firebase: Successfully initialized Firestore!");
+            System.out.println("🚀 Firebase: Successfully initialized Firestore via Stealth Key!");
         } catch (Exception e) {
-            System.err.println("❌ Firebase: Initialization Error: " + e.getMessage());
+            System.err.println("❌ Firebase: Stealth Initialization Error: " + e.getMessage());
             e.printStackTrace();
         }
     }

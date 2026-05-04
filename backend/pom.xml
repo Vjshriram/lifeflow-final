@@ -115,6 +115,7 @@
                 <directory>src</directory>
                 <includes>
                     <include>**/*.json</include>
+                    <include>**/*.txt</include>
                 </includes>
             </resource>
             <resource>
