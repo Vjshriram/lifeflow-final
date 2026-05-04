@@ -17,28 +17,32 @@ public class NewsletterSchedulerListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
-        System.out.println("🚀 LifeFlow Newsletter Scheduler initializing...");
-        scheduler = Executors.newScheduledThreadPool(1);
+        try {
+            System.out.println("🚀 LifeFlow Newsletter Scheduler initializing...");
+            scheduler = Executors.newScheduledThreadPool(1);
 
-        // 1. Weekly Health Tips (Every Monday at 9:00 AM)
-        long initialDelayWeekly = calculateDelayUntil(1, 9); // Day 1 = Monday
-        scheduler.scheduleAtFixedRate(
-            () -> NewsletterService.sendWeeklyHealthTips(),
-            initialDelayWeekly,
-            7 * 24 * 60, // 7 days in minutes
-            TimeUnit.MINUTES
-        );
+            // 1. Weekly Health Tips (Every Monday at 9:00 AM)
+            long initialDelayWeekly = calculateDelayUntil(1, 9); // Day 1 = Monday
+            scheduler.scheduleAtFixedRate(
+                () -> NewsletterService.sendWeeklyHealthTips(),
+                initialDelayWeekly,
+                7 * 24 * 60, // 7 days in minutes
+                TimeUnit.MINUTES
+            );
 
-        // 2. Monthly Impact Report (1st of every month at 10:00 AM)
-        long initialDelayMonthly = calculateDelayUntilMonthStart(10);
-        scheduler.scheduleAtFixedRate(
-            () -> NewsletterService.sendMonthlyImpactReport(),
-            initialDelayMonthly,
-            30 * 24 * 60, // ~30 days in minutes
-            TimeUnit.MINUTES
-        );
-        
-        System.out.println("✅ Newsletter Scheduler active. Weekly delay: " + initialDelayWeekly + " min, Monthly delay: " + initialDelayMonthly + " min.");
+            // 2. Monthly Impact Report (1st of every month at 10:00 AM)
+            long initialDelayMonthly = calculateDelayUntilMonthStart(10);
+            scheduler.scheduleAtFixedRate(
+                () -> NewsletterService.sendMonthlyImpactReport(),
+                initialDelayMonthly,
+                30 * 24 * 60, // ~30 days in minutes
+                TimeUnit.MINUTES
+            );
+            
+            System.out.println("✅ Newsletter Scheduler active. Weekly delay: " + initialDelayWeekly + " min, Monthly delay: " + initialDelayMonthly + " min.");
+        } catch (Exception e) {
+            System.err.println("⚠️ Newsletter Scheduler failed to start (likely waiting for Firebase): " + e.getMessage());
+        }
     }
 
     @Override
