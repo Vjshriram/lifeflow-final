@@ -261,19 +261,27 @@
 
     // Use the secure server-side bridge instead of client-side Firebase
     async function loadLeaderboard() {
-        console.log("🌐 Leaderboard: Initializing fetch to /api/leaderboard...");
+        console.log("🌐 Leaderboard: Initializing fetch to api/leaderboard...");
         try {
-            const response = await fetch('<%=request.getContextPath()%>/api/leaderboard');
+            // Using relative path to avoid context path confusion
+            const response = await fetch('api/leaderboard');
             console.log("📡 Leaderboard: Server responded with status:", response.status);
+            
+            if (!response.ok) {
+                throw new Error("Server returned " + response.status + ": " + response.statusText);
+            }
+
             const data = await response.json();
             
             if (data.success) {
                 renderLeaderboard(data.leaderboard);
             } else {
                 console.error("Leaderboard Error:", data.message);
+                alert("Leaderboard Error: " + data.message);
             }
         } catch (e) {
             console.error("Failed to fetch leaderboard:", e);
+            alert("Connection Error: " + e.message + "\nCheck browser console for details.");
         }
     }
 
