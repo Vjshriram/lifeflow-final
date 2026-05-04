@@ -25,6 +25,7 @@ public class LeaderboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        System.out.println("🚀 Leaderboard: GET Request received at /api/leaderboard");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 

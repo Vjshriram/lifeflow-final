@@ -261,8 +261,10 @@
 
     // Use the secure server-side bridge instead of client-side Firebase
     async function loadLeaderboard() {
+        console.log("🌐 Leaderboard: Initializing fetch to /api/leaderboard...");
         try {
             const response = await fetch('<%=request.getContextPath()%>/api/leaderboard');
+            console.log("📡 Leaderboard: Server responded with status:", response.status);
             const data = await response.json();
             
             if (data.success) {
