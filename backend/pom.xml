@@ -112,6 +112,12 @@
     <build>
         <resources>
             <resource>
+                <directory>src</directory>
+                <includes>
+                    <include>**/*.json</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
