@@ -37,12 +37,11 @@ public class EmailService {
 
     private static Properties getSmtpProperties() {
         Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.host", SMTP_HOST);
         props.put("mail.smtp.port", SMTP_PORT);
-        props.put("mail.smtp.socketFactory.port", SMTP_PORT);
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.socketFactory.fallback", "false");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.ssl.enable", "true");
+        props.put("mail.smtp.user", USERNAME);
         props.put("mail.debug", "true");
         props.put("mail.smtp.ssl.protocols", "TLSv1.2");
         return props;
