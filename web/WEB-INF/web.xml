@@ -46,11 +46,35 @@
         <url-pattern>/api/intelligence-briefing</url-pattern>
     </servlet-mapping>
 
+    <!-- ================= CHATBOT Neural Engine ================= -->
+    <servlet>
+        <servlet-name>ChatbotServlet</servlet-name>
+        <servlet-class>com.bloodbank.servlets.ChatbotServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ChatbotServlet</servlet-name>
+        <url-pattern>/api/chatbot</url-pattern>
+    </servlet-mapping>
+
+    <!-- ================= JSP CONFIGURATION ================= -->
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <el-ignored>false</el-ignored>
+            <page-encoding>UTF-8</page-encoding>
+            <scripting-invalid>false</scripting-invalid>
+            <is-xml>false</is-xml>
+        </jsp-property-group>
+        <jsp-property-group>
+            <url-pattern>*.jspf</url-pattern>
+            <is-xml>false</is-xml>
+        </jsp-property-group>
+    </jsp-config>
+
     <!-- ================= WELCOME ================= -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
-
 
 </web-app>
