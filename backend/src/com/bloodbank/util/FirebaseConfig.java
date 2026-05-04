@@ -1,11 +1,12 @@
 package com.bloodbank.util;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.cloud.firestore.Firestore;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,16 +27,15 @@ public class FirebaseConfig {
                 String config = jsonConfig.trim();
                 
                 // --- ULTIMATE STABILITY: BASE64 DECODER ---
-                // We first try to decode as Base64. This is the only way to be 100% safe 
-                // from Railway's character escaping issues.
                 byte[] jsonBytes;
                 try {
+                    // Try decoding as Base64 first (Railway-Safe)
                     jsonBytes = java.util.Base64.getDecoder().decode(config);
-                    System.out.println("✅ Firebase: Decoded Base64 configuration.");
+                    System.out.println("✅ Firebase: Decoded Base64 config.");
                 } catch (Exception e) {
-                    // If not Base64, fallback to raw bytes (but this is where escapes usually fail)
+                    // Fallback to raw bytes
                     jsonBytes = config.getBytes();
-                    System.out.println("⚠️ Firebase: Using raw JSON (Base64 fallback).");
+                    System.out.println("⚠️ Firebase: Using raw JSON.");
                 }
                 
                 options = FirebaseOptions.builder()
