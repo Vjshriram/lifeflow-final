@@ -8,7 +8,7 @@ import java.util.Properties;
 public class EmailService {
 
     private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final String SMTP_PORT = "587";
+    private static final String SMTP_PORT = "465";
     private static String USERNAME; 
     private static String PASSWORD;
     private static String FROM_NAME;
@@ -45,10 +45,13 @@ public class EmailService {
         props.put("mail.smtp.host", SMTP_HOST);
         props.put("mail.smtp.port", SMTP_PORT);
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.enable", "true");
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.socketFactory.port", SMTP_PORT);
+        props.put("mail.smtp.socketFactory.fallback", "false");
         props.put("mail.smtp.user", USERNAME);
-        props.put("mail.smtp.connectiontimeout", "15000"); // 15 seconds
-        props.put("mail.smtp.timeout", "15000");
+        props.put("mail.smtp.connectiontimeout", "30000"); // 30 seconds
+        props.put("mail.smtp.timeout", "30000");
         props.put("mail.debug", "true");
         return props;
     }

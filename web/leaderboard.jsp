@@ -282,14 +282,16 @@
             if (top3[index]) {
                 const user = top3[index];
                 const rank = index + 1;
-                const initials = user.fullName ? user.fullName.substring(0, 2).toUpperCase() : '??';
+                const initials = user.name ? user.name.substring(0, 2).toUpperCase() : '??';
+                const badgeHtml = user.badge ? `<div class="badge-pill life-saver" style="background: rgba(251, 191, 36, 0.15);"><i class="fa-solid ${user.badgeIcon}"></i> ${user.badge}</div>` : '';
                 
                 const podiumHtml = `
                     <div class="podium-item podium-${rank} show">
                         <div class="podium-avatar">${initials}<div class="rank-badge">${rank}</div></div>
                         <div class="pillar">
-                            <h4 class="text-white fw-bold mb-1">${user.fullName || 'Anonymous'}</h4>
-                            <div class="badge-pill life-saver"><i class="fa-solid fa-droplet"></i> ${user.donationCount || 0} Donations</div>
+                            <h4 class="text-white fw-bold mb-1">${user.name || 'Anonymous'}</h4>
+                            <div class="text-gold fw-bold mb-2">${user.count || 0} Donations</div>
+                            ${badgeHtml}
                         </div>
                     </div>
                 `;
@@ -302,16 +304,18 @@
         if (remaining.length > 0) {
             remaining.forEach((user, index) => {
                 const rank = index + 4;
-                const initials = user.fullName ? user.fullName.substring(0, 2).toUpperCase() : '??';
+                const initials = user.name ? user.name.substring(0, 2).toUpperCase() : '??';
+                const badgeHtml = user.badge ? `<div class="badge-pill top-donor"><i class="fa-solid ${user.badgeIcon}"></i> ${user.badge}</div>` : `<div class="badge-pill" style="border-color: #334155; color: #94a3b8;"><i class="fa-solid fa-hand-holding-heart"></i> Blood Donor</div>`;
+                
                 const listHtml = `
                     <div class="list-row">
                         <div class="list-rank">#${rank}</div>
                         <div class="list-avatar">${initials}</div>
                         <div class="list-info">
-                            <h5 class="text-white fw-bold mb-0">${user.fullName || 'Anonymous'}</h5>
-                            <div class="badge-pill top-donor"><i class="fa-solid fa-hand-holding-heart"></i> Blood Group: ${user.bloodGroup || 'Unknown'}</div>
+                            <h5 class="text-white fw-bold mb-0">${user.name || 'Anonymous'}</h5>
+                            ${badgeHtml}
                         </div>
-                        <div class="list-count">${user.donationCount || 0} <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">Donations</span></div>
+                        <div class="list-count">${user.count || 0} <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">Donations</span></div>
                     </div>
                 `;
                 listContainer.innerHTML += listHtml;
