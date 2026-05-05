@@ -118,7 +118,7 @@ public class ChatServlet extends HttpServlet {
             JSONArray sysParts = new JSONArray();
             sysParts.put(new JSONObject().put("text", systemInstruction));
             sysInstrObj.put("parts", sysParts);
-            jsonPayload.put("system_instruction", sysInstrObj);
+            jsonPayload.put("systemInstruction", sysInstrObj);
 
             // User Content
             JSONArray contents = new JSONArray();
@@ -145,7 +145,7 @@ public class ChatServlet extends HttpServlet {
                             .getString("text");
                 } else {
                     System.err.println("Gemini API Error: " + responseBody);
-                    return "Intelligence Fallback: I encountered an anomaly while processing your request. Please try again.";
+                    return "Intelligence Fallback API Error: " + responseBody.replace("\"", "'");
                 }
             }
         } catch (Exception e) {
