@@ -88,8 +88,8 @@ public class ChatServlet extends HttpServlet {
 
         String identity = (name != null) ? name : "Hero";
         String userRole = (role != null) ? role.toLowerCase() : "donor";
-        // 🎯 ULTIMATE FIX: Using gemini-2.0-flash which was verified as available for this API Key.
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
+        // 🎯 STABILITY FIX: Using 'gemini-pro-latest' and merging instructions into the prompt.
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent?key=" + apiKey;
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(url);
@@ -108,22 +108,16 @@ public class ChatServlet extends HttpServlet {
                     "- Use emojis strategically to make the interaction more engaging (e.g., 🩸, ❤️, 🎖️, 🤖, ✨).\n" +
                     "- If the user asks for help or 'what to do', provide specific instructions based on the platform features above.\n" +
                     "- Do NOT mention being an AI unless explicitly asked.\n" +
-                    "- Prioritize medical safety and official platform protocols.";
+                    "- Prioritize medical safety and official platform protocols.\n\n" +
+                    "USER REQUEST:\n" + input;
 
             JSONObject jsonPayload = new JSONObject();
 
-            // System Instruction
-            JSONObject sysInstrObj = new JSONObject();
-            JSONArray sysParts = new JSONArray();
-            sysParts.put(new JSONObject().put("text", systemInstruction));
-            sysInstrObj.put("parts", sysParts);
-            jsonPayload.put("systemInstruction", sysInstrObj);
-
-            // User Content
+            // Merged Content
             JSONArray contents = new JSONArray();
             JSONObject userContent = new JSONObject();
             JSONArray userParts = new JSONArray();
-            userParts.put(new JSONObject().put("text", input));
+            userParts.put(new JSONObject().put("text", systemInstruction));
             userContent.put("parts", userParts);
             contents.put(userContent);
             jsonPayload.put("contents", contents);
@@ -144,7 +138,7 @@ public class ChatServlet extends HttpServlet {
                             .getString("text");
                 } else {
                     System.err.println("Gemini API Error: " + responseBody);
-                    return "Intelligence Fallback: I encountered an anomaly while processing your request. Please try again.";
+                    return "Intelligence Fallback API Error: " + responseBody.replace("\"", "'");
                 }
             }
         } catch (Exception e) {
