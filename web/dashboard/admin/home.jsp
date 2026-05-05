@@ -23,24 +23,24 @@
 <!-- Premium Visuals: 3D Globe & Charts -->
 <script src="https://unpkg.com/globe.gl" defer></script>
 </head>
-<body class="bg-dark text-white">
+<body style="background: linear-gradient(135deg, #0f172a 0%, #020617 100%); color: white; min-height: 100vh;">
 <% request.setAttribute("activePage", "dashboard"); %>
 <jsp:include page="/WEB-INF/fragments/admin-topnav.jsp" />
 
-<div class="admin-view">
-    <!-- AI INSIGHT TICKER -->
-    <div class="container-fluid mb-5">
-        <div class="ticker-wrapper shadow-sm">
-            <div class="ticker-marquee">
-                <div class="ticker-item"><i class="fa-solid fa-bolt-lightning text-warning"></i> AI Prediction: Critical shortage of O- detected in Mumbai region. Launching outreach...</div>
-                <div class="ticker-item"><i class="fa-solid fa-circle-check text-success"></i> System Health: 99.9% uptime. Cloud database synchronized.</div>
-                <div class="ticker-item"><i class="fa-solid fa-chart-line text-info"></i> Network Flux: 15% increase in donor registrations this week.</div>
-                <div class="ticker-item"><i class="fa-solid fa-microchip text-primary"></i> Neural Engine: demand forecasting confidence at 94.2%.</div>
+<div class="admin-view pt-5">
+    <!-- AI INSIGHT TICKER (HORIZONTAL ROLL) -->
+    <div class="container-fluid mb-4 mt-5">
+        <div class="ticker-roll bg-white bg-opacity-5 border border-white border-opacity-10 py-2 rounded-pill shadow-sm overflow-hidden">
+            <div class="ticker-content d-flex align-items-center gap-5">
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-bolt-lightning text-warning me-2"></i> AI Prediction: Critical shortage of O- detected in Mumbai region. Launching outreach...</span>
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-circle-check text-success me-2"></i> System Health: 99.9% uptime. Cloud database synchronized.</span>
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-chart-line text-info me-2"></i> Network Flux: 15% increase in donor registrations this week.</span>
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-microchip text-primary me-2"></i> Neural Engine: demand forecasting confidence at 94.2%.</span>
                 <!-- Duplicate for seamless scroll -->
-                <div class="ticker-item"><i class="fa-solid fa-bolt-lightning text-warning"></i> AI Prediction: Critical shortage of O- detected in Mumbai region. Launching outreach...</div>
-                <div class="ticker-item"><i class="fa-solid fa-circle-check text-success"></i> System Health: 99.9% uptime. Cloud database synchronized.</div>
-                <div class="ticker-item"><i class="fa-solid fa-chart-line text-info"></i> Network Flux: 15% increase in donor registrations this week.</div>
-                <div class="ticker-item"><i class="fa-solid fa-microchip text-primary"></i> Neural Engine: demand forecasting confidence at 94.2%.</div>
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-bolt-lightning text-warning me-2"></i> AI Prediction: Critical shortage of O- detected in Mumbai region. Launching outreach...</span>
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-circle-check text-success me-2"></i> System Health: 99.9% uptime. Cloud database synchronized.</span>
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-chart-line text-info me-2"></i> Network Flux: 15% increase in donor registrations this week.</span>
+                <span class="ticker-item text-nowrap"><i class="fa-solid fa-microchip text-primary me-2"></i> Neural Engine: demand forecasting confidence at 94.2%.</span>
             </div>
         </div>
     </div>
@@ -398,87 +398,46 @@
                 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); opacity: 1; }
                 70% { box-shadow: 0 0 0 12px rgba(225, 29, 72, 0); opacity: 0.5; }
                 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); opacity: 1; }
+            /* TICKER ROLL ANIMATION */
+            .ticker-roll {
+                position: relative;
+                width: 100%;
+                white-space: nowrap;
             }
-            .pulse-white {
-                animation: pulse-white 2s infinite;
+            .ticker-content {
+                display: inline-flex;
+                animation: roll 30s linear infinite;
             }
-            @keyframes pulse-white {
-                0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
-                70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
-                100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+            @keyframes roll {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
             }
-
-            /* Operational Sidebar Header */
-            .sidebar-header {
-                background: linear-gradient(90deg, rgba(225, 29, 72, 0.1), transparent);
-                margin: -24px -24px 24px -24px;
-                padding: 24px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            }
-
-            /* Dashboard Background Polish */
-            .admin-view::before {
-                content: '';
-                position: fixed;
-                top: -10%; right: -10%;
-                width: 60vw; height: 60vh;
-                background: radial-gradient(circle at 100% 0%, rgba(225, 29, 72, 0.08) 0%, transparent 70%);
-                pointer-events: none;
-                z-index: -1;
-                filter: blur(80px);
-            }
-            .admin-view::after {
-                content: '';
-                position: fixed;
-                bottom: -10%; left: -10%;
-                width: 40vw; height: 40vh;
-                background: radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
-                pointer-events: none;
-                z-index: -1;
-                filter: blur(80px);
-            }
-            /* Live Flux Styling */
-            .flux-container {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-                max-height: 200px;
-                overflow-y: auto;
-                padding-right: 5px;
-            }
-            .flux-item {
-                display: flex;
-                gap: 12px;
-                align-items: flex-start;
-                padding: 10px;
-                background: rgba(255, 255, 255, 0.02);
-                border-radius: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.05);
-                transition: all 0.3s ease;
-            }
-            .flux-item:hover {
-                background: rgba(255, 255, 255, 0.05);
-                transform: translateX(5px);
-            }
-            .flux-dot {
-                width: 8px;
-                height: 8px;
-                border-radius: 50%;
-                margin-top: 6px;
-                flex-shrink: 0;
-            }
-            .flux-title {
+            .ticker-item {
                 font-size: 0.85rem;
-                font-weight: 600;
-                color: rgba(255, 255, 255, 0.9);
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.8);
             }
-            .flux-time {
-                font-size: 0.75rem;
-                color: rgba(255, 255, 255, 0.4);
+
+            /* GLASSMORPHISM CARD UPGRADES */
+            .card-modern {
+                background: rgba(30, 41, 59, 0.4) !important;
+                backdrop-filter: blur(15px);
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
             }
-            .flux-container::-webkit-scrollbar { width: 4px; }
-            .flux-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        </style>
+            .count-up, .fw-800 {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            }
+            
+            /* Stats Number Polish */
+            h1.fw-800 {
+                font-size: 3.5rem !important;
+                letter-spacing: -2px;
+                background: linear-gradient(to bottom, #fff, #94a3b8);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            }
 
         <script>
             function updateFlux() {
