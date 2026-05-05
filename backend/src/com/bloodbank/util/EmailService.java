@@ -100,6 +100,7 @@ public class EmailService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
     }
 
     private static String wrapInTemplate(String title, String content) {
