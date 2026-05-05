@@ -23,14 +23,15 @@
 <!-- Premium Visuals: 3D Globe & Charts -->
 <script src="https://unpkg.com/globe.gl" defer></script>
 </head>
-<body style="background: linear-gradient(135deg, #0f172a 0%, #020617 100%); color: white; min-height: 100vh;">
+<body style="background: #020617 !important; color: white; min-height: 100vh;">
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a 0%, #020617 100%); z-index: -1;"></div>
 <% request.setAttribute("activePage", "dashboard"); %>
 <jsp:include page="/WEB-INF/fragments/admin-topnav.jsp" />
 
 <div class="admin-view pt-5">
     <!-- AI INSIGHT TICKER (HORIZONTAL ROLL) -->
     <div class="container-fluid mb-4 mt-5">
-        <div class="ticker-roll bg-white bg-opacity-5 border border-white border-opacity-10 py-2 rounded-pill shadow-sm overflow-hidden">
+        <div class="ticker-roll" style="background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); py-2 rounded-pill shadow-lg overflow-hidden; border-radius: 50rem; padding: 10px 0;">
             <div class="ticker-content d-flex align-items-center gap-5">
                 <span class="ticker-item text-nowrap"><i class="fa-solid fa-bolt-lightning text-warning me-2"></i> AI Prediction: Critical shortage of O- detected in Mumbai region. Launching outreach...</span>
                 <span class="ticker-item text-nowrap"><i class="fa-solid fa-circle-check text-success me-2"></i> System Health: 99.9% uptime. Cloud database synchronized.</span>
