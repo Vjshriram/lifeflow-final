@@ -89,8 +89,8 @@ public class ChatServlet extends HttpServlet {
         String identity = (name != null) ? name : "Hero";
         String userRole = (role != null) ? role.toLowerCase() : "donor";
 
-        // 🎯 FINAL FIX: Using the absolute most stable model name
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey;
+        // 🎯 FINAL FIX: Using gemini-1.5-flash which supports system_instruction
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(url);
