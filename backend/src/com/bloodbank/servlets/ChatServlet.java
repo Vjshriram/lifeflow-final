@@ -88,8 +88,8 @@ public class ChatServlet extends HttpServlet {
 
         String identity = (name != null) ? name : "Hero";
         String userRole = (role != null) ? role.toLowerCase() : "donor";
-        // 🎯 QUOTA FIX: Using 'gemini-1.5-flash' which has a much higher free-tier quota than 3.1-pro.
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+        // 🎯 DEFINITIVE FIX: Using 'gemini-flash-latest' which was confirmed via the check_models.jsp diagnostic.
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + apiKey;
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(url);
@@ -138,7 +138,7 @@ public class ChatServlet extends HttpServlet {
                             .getString("text");
                 } else {
                     System.err.println("Gemini API Error: " + responseBody);
-                    return "Intelligence Fallback API Error: " + responseBody.replace("\"", "'");
+                    return "Intelligence Fallback: I encountered an anomaly while processing your request. Please try again.";
                 }
             }
         } catch (Exception e) {
