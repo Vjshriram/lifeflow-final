@@ -24,7 +24,7 @@
 <script src="https://unpkg.com/globe.gl" defer></script>
 </head>
 <body style="background: #0f172a !important; color: white; min-height: 100vh;">
-<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); z-index: -1;"></div>
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #334155 0%, #0f172a 100%); z-index: -1;"></div>
 <% request.setAttribute("activePage", "dashboard"); %>
 <jsp:include page="/WEB-INF/fragments/admin-topnav.jsp" />
 
