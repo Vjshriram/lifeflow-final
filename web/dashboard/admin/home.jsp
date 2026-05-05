@@ -51,10 +51,15 @@
             <div>
                 <h2 class="fw-bold mb-1">Admin Dashboard <span class="badge badge-soft-danger align-middle fs-6">Live</span></h2>
                 <p class="text-light text-opacity-75">Welcome back, Administrator. Here's what's happening today.</p>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="fetch('<%=request.getContextPath()%>/api/analytics?refresh=true').then(() => location.reload())" title="Force Refresh UI">
+                        <i class="fa-solid fa-arrows-rotate me-1"></i> Sync UI
+                    </button>
+                    <button class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm" id="briefingBtn">
+                        <i class="fa-solid fa-brain me-1"></i> Generate Daily Briefing
+                    </button>
+                </div>
             </div>
-            <button id="briefingBtn" class="btn btn-premium rounded-pill px-4 shadow-sm">
-                <i class="fa-solid fa-brain me-2"></i> Generate Daily Briefing
-            </button>
         </div>
 
 
@@ -333,7 +338,7 @@
 
  <!-- END ACTIVITY ROW --> 
         <div class="mt-5 text-center text-white-50 small fade-in-up delay-300">
-            <p>LifeFlow AI Command Engine v2.7 | Synchronized with Global Network State</p>
+            <p>LifeFlow AI Command Engine v2.8 | Synchronized with Global Network State</p>
         </div>
 
         <div class="row fade-in-up delay-200 mt-4">

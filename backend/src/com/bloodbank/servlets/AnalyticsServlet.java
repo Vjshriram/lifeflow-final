@@ -126,46 +126,52 @@ public class AnalyticsServlet extends HttpServlet {
         com.google.api.core.ApiFuture<com.google.cloud.firestore.AggregateQuerySnapshot> fPending = db.collection("users").whereEqualTo("status", "PENDING").count().get();
         com.google.api.core.ApiFuture<com.google.cloud.firestore.AggregateQuerySnapshot> fAlerts = db.collection("emergency_alerts").count().get();
 
-        // 2. Fire list queries in parallel
-        com.google.api.core.ApiFuture<QuerySnapshot> fRecentUsers = db.collection("users")
-                .orderBy("created_at", com.google.cloud.firestore.Query.Direction.DESCENDING)
-                .limit(5).get();
-        com.google.api.core.ApiFuture<QuerySnapshot> fP2P = db.collection("peer_requests")
-                .orderBy("created_at", com.google.cloud.firestore.Query.Direction.DESCENDING)
-                .limit(5).get();
+        // 2. Fire list queries in parallel (Removed orderBy to avoid Firestore index requirements)
+        com.google.api.core.ApiFuture<QuerySnapshot> fRecentUsers = db.collection("users").limit(10).get();
+        com.google.api.core.ApiFuture<QuerySnapshot> fP2P = db.collection("peer_requests").limit(10).get();
 
-        // 3. Collect Results
+        // 3. Collect & Sort Results in Memory
         stats.put("totalDonors", fDonors.get().getCount());
         stats.put("totalBanks", fBanks.get().getCount());
         stats.put("pendingApprovals", fPending.get().getCount());
         stats.put("activeAlerts", fAlerts.get().getCount());
 
+        java.util.List<QueryDocumentSnapshot> sortedUsers = new java.util.ArrayList<>(fRecentUsers.get().getDocuments());
+        sortedUsers.sort((a, b) -> {
+            String tA = a.getString("created_at");
+            String tB = b.getString("created_at");
+            return (tB != null ? tB : "").compareTo(tA != null ? tA : "");
+        });
+
         JSONArray usersArr = new JSONArray();
-        for (QueryDocumentSnapshot doc : fRecentUsers.get().getDocuments()) {
+        for (int i = 0; i < Math.min(5, sortedUsers.size()); i++) {
+            QueryDocumentSnapshot doc = sortedUsers.get(i);
             JSONObject u = new JSONObject();
             u.put("full_name", doc.getString("full_name"));
             u.put("role", doc.getString("role"));
             u.put("status", doc.getString("status"));
-            
-            Object createdObj = doc.get("created_at");
-            if (createdObj instanceof com.google.cloud.Timestamp) {
-                u.put("created_at", ((com.google.cloud.Timestamp) createdObj).toDate().toString());
-            } else {
-                u.put("created_at", createdObj != null ? createdObj.toString() : "N/A");
-            }
+            u.put("created_at", doc.getString("created_at") != null ? doc.getString("created_at") : "N/A");
             usersArr.put(u);
         }
         stats.put("recentUsers", usersArr);
 
+        java.util.List<QueryDocumentSnapshot> sortedP2P = new java.util.ArrayList<>(fP2P.get().getDocuments());
+        sortedP2P.sort((a, b) -> {
+            String tA = a.getString("created_at");
+            String tB = b.getString("created_at");
+            return (tB != null ? tB : "").compareTo(tA != null ? tA : "");
+        });
+
         JSONArray p2pArr = new JSONArray();
-        for (QueryDocumentSnapshot doc : fP2P.get().getDocuments()) {
+        for (int i = 0; i < Math.min(5, sortedP2P.size()); i++) {
+            QueryDocumentSnapshot doc = sortedP2P.get(i);
             JSONObject p = new JSONObject();
             p.put("requester_name", doc.getString("requester_name"));
             p.put("blood_group", doc.getString("blood_group"));
             p.put("hospital_city", doc.getString("hospital_city"));
             p.put("urgency", doc.getString("urgency"));
             p.put("status", doc.getString("status"));
-            p.put("created_at", doc.getString("created_at"));
+            p.put("created_at", doc.getString("created_at") != null ? doc.getString("created_at") : "N/A");
             p2pArr.put(p);
         }
         stats.put("recentP2P", p2pArr);
