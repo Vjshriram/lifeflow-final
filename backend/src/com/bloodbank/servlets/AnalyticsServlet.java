@@ -28,8 +28,8 @@ import java.util.concurrent.ExecutionException;
 @WebServlet(name = "AnalyticsServlet", urlPatterns = {"/api/analytics"})
 public class AnalyticsServlet extends HttpServlet {
 
-    // 🕒 Cache configuration: 3-hour expiry to minimize Firebase reads
-    private static final long CACHE_EXPIRY_MS = 3 * 60 * 60 * 1000;
+    // 🕒 Cache configuration: 1-minute expiry for responsiveness
+    private static final long CACHE_EXPIRY_MS = 1 * 60 * 1000;
     private static final Map<String, CacheEntry> metricsCache = new ConcurrentHashMap<>();
 
     private static class CacheEntry {

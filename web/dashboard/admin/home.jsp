@@ -333,7 +333,7 @@
 
  <!-- END ACTIVITY ROW --> 
         <div class="mt-5 text-center text-white-50 small fade-in-up delay-300">
-            <p>LifeFlow AI Command Engine v2.5 | Synchronized with Global Network State</p>
+            <p>LifeFlow AI Command Engine v2.7 | Synchronized with Global Network State</p>
         </div>
 
         <div class="row fade-in-up delay-200 mt-4">
