@@ -86,13 +86,22 @@ public class EmailService {
 
     public static void sendSupportEmail(String fromName, String fromEmail, String messageBody) {
         try {
-            Message message = new MimeMessage(getSession());
-            message.setFrom(new InternetAddress(USERNAME, "LifeFlow Support"));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(USERNAME));
-            message.setReplyTo(new InternetAddress[]{new InternetAddress(fromEmail)});
-            message.setSubject("Support Inquiry from " + fromName);
-            message.setContent("<p>From: " + fromName + "</p><p>" + messageBody + "</p>", "text/html");
-            Transport.send(message);
+            // 1. Send inquiry to Admin
+            Message adminMessage = new MimeMessage(getSession());
+            adminMessage.setFrom(new InternetAddress(USERNAME, "LifeFlow Support System"));
+            adminMessage.setRecipients(Message.RecipientType.TO, InternetAddress.parse(USERNAME));
+            adminMessage.setReplyTo(new InternetAddress[]{new InternetAddress(fromEmail)});
+            adminMessage.setSubject("Support Inquiry from " + fromName);
+            adminMessage.setContent("<p><strong>From:</strong> " + fromName + " (" + fromEmail + ")</p><p><strong>Message:</strong></p><p>" + messageBody + "</p>", "text/html");
+            Transport.send(adminMessage);
+
+            // 2. Send auto-reply confirmation to the User
+            Message userMessage = new MimeMessage(getSession());
+            userMessage.setFrom(new InternetAddress(USERNAME, "LifeFlow Support"));
+            userMessage.setRecipients(Message.RecipientType.TO, InternetAddress.parse(fromEmail));
+            userMessage.setSubject("We received your message, " + fromName + "!");
+            userMessage.setContent("<h3>Hi " + fromName + ",</h3><p>Thank you for reaching out to LifeFlow. We have received your message and our support team will get back to you shortly.</p><br><p><strong>Your Message:</strong><br>" + messageBody + "</p><br><p>Best,<br>LifeFlow Team</p>", "text/html");
+            Transport.send(userMessage);
         } catch (Exception e) { e.printStackTrace(); }
     }
 

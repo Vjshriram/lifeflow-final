@@ -260,6 +260,67 @@
 <%@ include file="/WEB-INF/fragments/footer.jspf" %>
 
 <script>
+    function renderLeaderboard(leaderboard) {
+        const podiumContainer = document.getElementById('podiumContent');
+        const listContainer = document.getElementById('listContent');
+        
+        podiumContainer.innerHTML = '';
+        listContainer.innerHTML = '';
+
+        if (!leaderboard || leaderboard.length === 0) {
+            podiumContainer.innerHTML = '<div class="text-secondary fs-5">No data available yet... Be the first hero!</div>';
+            return;
+        }
+
+        // Top 3 for Podium
+        const top3 = leaderboard.slice(0, 3);
+        
+        // Reorder for podium: 2, 1, 3
+        const podiumOrder = [1, 0, 2];
+        
+        podiumOrder.forEach((index) => {
+            if (top3[index]) {
+                const user = top3[index];
+                const rank = index + 1;
+                const initials = user.fullName ? user.fullName.substring(0, 2).toUpperCase() : '??';
+                
+                const podiumHtml = `
+                    <div class="podium-item podium-${rank} show">
+                        <div class="podium-avatar">${initials}<div class="rank-badge">${rank}</div></div>
+                        <div class="pillar">
+                            <h4 class="text-white fw-bold mb-1">${user.fullName || 'Anonymous'}</h4>
+                            <div class="badge-pill life-saver"><i class="fa-solid fa-droplet"></i> ${user.donationCount || 0} Donations</div>
+                        </div>
+                    </div>
+                `;
+                podiumContainer.innerHTML += podiumHtml;
+            }
+        });
+
+        // Remaining for List
+        const remaining = leaderboard.slice(3);
+        if (remaining.length > 0) {
+            remaining.forEach((user, index) => {
+                const rank = index + 4;
+                const initials = user.fullName ? user.fullName.substring(0, 2).toUpperCase() : '??';
+                const listHtml = `
+                    <div class="list-row">
+                        <div class="list-rank">#${rank}</div>
+                        <div class="list-avatar">${initials}</div>
+                        <div class="list-info">
+                            <h5 class="text-white fw-bold mb-0">${user.fullName || 'Anonymous'}</h5>
+                            <div class="badge-pill top-donor"><i class="fa-solid fa-hand-holding-heart"></i> Blood Group: ${user.bloodGroup || 'Unknown'}</div>
+                        </div>
+                        <div class="list-count">${user.donationCount || 0} <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">Donations</span></div>
+                    </div>
+                `;
+                listContainer.innerHTML += listHtml;
+            });
+        } else {
+            listContainer.innerHTML = '<div class="text-center text-secondary py-4">More heroes joining soon...</div>';
+        }
+    }
+
     // Use the secure server-side bridge instead of client-side Firebase
     async function loadLeaderboard() {
         console.log("🌐 Leaderboard: Initializing fetch to LeaderboardData...");
