@@ -259,6 +259,7 @@
 
 <%@ include file="/WEB-INF/fragments/footer.jspf" %>
 
+<script>
     // Use the secure server-side bridge instead of client-side Firebase
     async function loadLeaderboard() {
         console.log("🌐 Leaderboard: Initializing fetch to LeaderboardData...");
