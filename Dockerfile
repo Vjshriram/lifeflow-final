@@ -9,7 +9,7 @@ FROM tomcat:9.0.83-jdk17-temurin-jammy
 
 # --- RAILWAY OPTIMIZATION: JVM TUNING ---
 # Setting max memory to 440MB to stay safely within Railway's 512MB free tier limit
-ENV JAVA_OPTS="-Xms256m -Xmx440m -XX:+UseSerialGC -Djava.security.egd=file:/dev/./urandom"
+ENV JAVA_OPTS="-Xms256m -Xmx440m -XX:+UseSerialGC -Djava.security.egd=file:/dev/./urandom -Djava.net.preferIPv4Stack=true"
 
 # Remove default Tomcat webapps
 RUN rm -rf /usr/local/tomcat/webapps/*
