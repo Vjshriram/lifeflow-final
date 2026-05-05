@@ -66,10 +66,10 @@
                     <!-- Donors -->
                     <div class="col-sm-6 col-xl-3">
                         <div class="card card-modern h-100 border-0 shadow-lg overflow-hidden position-relative" style="background: rgba(225, 29, 72, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(225, 29, 72, 0.2) !important;">
-                            <div class="position-absolute top-0 end-0 p-3 opacity-10" style="font-size: 5rem; transform: translate(20%, -20%) rotate(-15deg);">
+                            <div class="position-absolute top-0 end-0 p-3" style="font-size: 3.5rem; opacity: 0.05; transform: translate(15%, -15%) rotate(-15deg); z-index: 0;">
                                 <i class="fa-solid fa-hand-holding-droplet"></i>
                             </div>
-                            <div class="card-body p-4 position-relative">
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
                                 <div class="d-flex align-items-center gap-3 mb-3">
                                     <div class="icon-blob" style="background: linear-gradient(135deg, #e11d48, #9f1239); color: white; box-shadow: 0 0 20px rgba(225, 29, 72, 0.4); border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
                                         <i class="fa-solid fa-hand-holding-droplet"></i>
@@ -86,8 +86,11 @@
                     </div>
                     <!-- Banks -->
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card card-modern h-100 border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05) !important;">
-                            <div class="card-body p-4">
+                        <div class="card card-modern h-100 border-0 shadow-lg overflow-hidden position-relative" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05) !important;">
+                            <div class="position-absolute top-0 end-0 p-3" style="font-size: 3.5rem; opacity: 0.03; transform: translate(15%, -15%) rotate(-15deg); z-index: 0;">
+                                <i class="fa-solid fa-hospital"></i>
+                            </div>
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
                                 <div class="d-flex align-items-center gap-3 mb-3">
                                     <div class="icon-blob bg-info bg-opacity-10 text-info" style="border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-hospital"></i></div>
                                     <span class="text-white-50 text-uppercase small fw-bold" style="letter-spacing:1.5px">Banks</span>
@@ -99,8 +102,11 @@
                     </div>
                     <!-- Pending -->
                     <div class="col-sm-6 col-xl-3">
-                        <div class="card card-modern h-100 border-0 shadow-lg" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05) !important;">
-                            <div class="card-body p-4">
+                        <div class="card card-modern h-100 border-0 shadow-lg overflow-hidden position-relative" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05) !important;">
+                            <div class="position-absolute top-0 end-0 p-3" style="font-size: 3.5rem; opacity: 0.03; transform: translate(15%, -15%) rotate(-15deg); z-index: 0;">
+                                <i class="fa-solid fa-user-clock"></i>
+                            </div>
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
                                 <div class="d-flex align-items-center gap-3 mb-3">
                                     <div class="icon-blob bg-warning bg-opacity-10 text-warning" style="border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-user-clock"></i></div>
                                     <span class="text-white-50 text-uppercase small fw-bold" style="letter-spacing:1.5px">Pending</span>
@@ -113,10 +119,10 @@
                     <!-- Alerts -->
                     <div class="col-sm-6 col-xl-3">
                         <div class="card card-modern h-100 border-0 shadow-lg overflow-hidden position-relative" style="background: linear-gradient(145deg, rgba(225, 29, 72, 0.6), rgba(190, 18, 60, 0.3)); border: 1px solid rgba(255, 255, 255, 0.1) !important; box-shadow: 0 10px 30px rgba(225, 29, 72, 0.2) !important;">
-                            <div class="position-absolute top-0 end-0 p-3 opacity-20" style="font-size: 5rem; transform: translate(20%, -20%) rotate(-15deg);">
+                            <div class="position-absolute top-0 end-0 p-3" style="font-size: 3.5rem; opacity: 0.08; transform: translate(15%, -15%) rotate(-15deg); z-index: 0;">
                                 <i class="fa-solid fa-triangle-exclamation"></i>
                             </div>
-                            <div class="card-body p-4 position-relative">
+                            <div class="card-body p-4 position-relative" style="z-index: 1;">
                                 <div class="d-flex align-items-center gap-3 mb-3">
                                     <div class="icon-blob pulse-white" style="background: rgba(255,255,255,0.2); color: white; border-radius: 12px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
                                         <i class="fa-solid fa-triangle-exclamation"></i>
