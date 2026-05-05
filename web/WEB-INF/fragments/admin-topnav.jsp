@@ -16,131 +16,180 @@
             </a>
 
             <!-- Nav Links -->
-            <div class="d-none d-lg-flex align-items-center gap-1 nav-links-container">
+            <div class="d-none d-lg-flex align-items-center gap-2 nav-links-container">
                 <a href="<%= rootPath %>/dashboard/admin/home.jsp" class="nav-link-premium <%= "dashboard".equals(active) ? "active" : "" %>">
-                    <i class="fa-solid fa-border-all me-1"></i> Dashboard
+                    <div class="nav-icon-wrapper"><i class="fa-solid fa-border-all"></i></div>
+                    <span>Dashboard</span>
                 </a>
                 <a href="<%= rootPath %>/dashboard/admin/analytics.jsp" class="nav-link-premium <%= "analytics".equals(active) ? "active" : "" %>">
-                    <i class="fa-solid fa-chart-line me-1"></i> Intel
+                    <div class="nav-icon-wrapper"><i class="fa-solid fa-chart-line"></i></div>
+                    <span>Intel</span>
                 </a>
                 <a href="<%= rootPath %>/dashboard/admin/campaigns.jsp" class="nav-link-premium <%= "campaigns".equals(active) ? "active" : "" %>">
-                    <i class="fa-solid fa-bullhorn me-1"></i> Campaigns
+                    <div class="nav-icon-wrapper"><i class="fa-solid fa-bullhorn"></i></div>
+                    <span>Campaigns</span>
                 </a>
                 <a href="<%= rootPath %>/dashboard/admin/adminPendingApprovals.jsp" class="nav-link-premium <%= "approvals".equals(active) ? "active" : "" %>">
-                    <i class="fa-solid fa-user-check me-1"></i> Approvals
+                    <div class="nav-icon-wrapper"><i class="fa-solid fa-user-check"></i></div>
+                    <span>Approvals</span>
                 </a>
                 <a href="<%= rootPath %>/dashboard/admin/emergencyBroadcast.jsp" class="nav-link-premium <%= "emergency".equals(active) ? "active" : "" %>">
-                    <i class="fa-solid fa-tower-broadcast me-1"></i> Emergency
+                    <div class="nav-icon-wrapper"><i class="fa-solid fa-tower-broadcast"></i></div>
+                    <span>Emergency</span>
                 </a>
             </div>
-
+ 
             <!-- Profile / Actions -->
             <div class="d-flex align-items-center gap-3">
                 <div class="v-divider"></div>
-                <a href="<%= rootPath %>/LogoutServlet" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 border-opacity-25 fw-bold">
-                    <i class="fa-solid fa-power-off me-1"></i> Sign Out
+                <a href="<%= rootPath %>/LogoutServlet" class="btn-logout-premium">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span>Sign Out</span>
                 </a>
             </div>
         </div>
     </div>
 </nav>
-
+ 
 <style>
-.admin-topnav-init-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: none; }
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
 .admin-topnav-wrapper {
     position: fixed;
-    top: 1.5rem;
+    top: 1.2rem;
     left: 0;
     right: 0;
     z-index: 1000;
+    padding: 0 1rem;
+    font-family: 'Outfit', sans-serif;
 }
+
 .admin-topnav {
-    border-radius: 50rem;
-    background: rgba(15, 23, 42, 0.7);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 100px;
+    background: rgba(10, 10, 15, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 
+                inset 0 0 20px rgba(255, 255, 255, 0.02);
+    padding: 0.6rem 1.5rem !important;
 }
-.brand-link { transition: transform 0.3s ease; }
-.brand-link:hover { transform: scale(1.02); }
+
+.brand-link { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.brand-link:hover { transform: translateY(-1px) scale(1.02); }
+
+.pulse-glow {
+    filter: drop-shadow(0 0 5px rgba(225, 29, 72, 0.6));
+    animation: pulse-red 2s infinite ease-in-out;
+}
+
+@keyframes pulse-red {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(225, 29, 72, 0.9)); }
+}
+
 .nav-link-premium {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 50rem;
-    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 100px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
+    gap: 8px;
+    position: relative;
+    border: 1px solid transparent;
 }
-.nav-link-premium:hover, .nav-link-premium.active {
+
+.nav-icon-wrapper {
+    font-size: 0.95rem;
+    transition: transform 0.3s ease;
+}
+
+.nav-link-premium:hover {
     color: #fff;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-1px);
 }
+
+.nav-link-premium:hover .nav-icon-wrapper {
+    transform: scale(1.2);
+}
+
 .nav-link-premium.active {
-    background: rgba(225, 29, 72, 0.1);
-    color: #e11d48;
-    border: 1px solid rgba(225, 29, 72, 0.2);
+    background: linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, rgba(225, 29, 72, 0.05) 100%);
+    color: #ff4d6d;
+    font-weight: 700;
+    border: 1px solid rgba(225, 29, 72, 0.3);
+    box-shadow: 0 4px 15px rgba(225, 29, 72, 0.1);
 }
+
+.nav-link-premium.active .nav-icon-wrapper {
+    filter: drop-shadow(0 0 5px rgba(225, 29, 72, 0.4));
+}
+
 .v-divider {
     width: 1px;
-    height: 24px;
-    background: rgba(255, 255, 255, 0.1);
-}
-.glass-morphism-dark {
-    background: rgba(15, 23, 42, 0.95) !important;
-    backdrop-filter: blur(20px);
-    border-radius: 1.25rem !important;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent);
 }
 
-/* Page Layout & Ticker */
-.admin-view { padding-top: 7.5rem; min-height: 100vh; background: #0f172a; position: relative; z-index: 1; overflow-x: hidden; }
+.btn-logout-premium {
+    background: rgba(225, 29, 72, 0.1);
+    color: #ff4d6d;
+    border: 1px solid rgba(225, 29, 72, 0.3);
+    border-radius: 100px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-logout-premium:hover {
+    background: #e11d48;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(225, 29, 72, 0.4);
+    transform: scale(1.05);
+}
+
+.badge-admin {
+    background: rgba(225, 29, 72, 0.1);
+    color: #ff4d6d;
+    border: 1px solid rgba(225, 29, 72, 0.2);
+    font-size: 0.6rem !important;
+    padding: 0.2rem 0.6rem !important;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    font-weight: 800;
+    box-shadow: inset 0 0 10px rgba(225, 29, 72, 0.05);
+}
+
+/* Ticker Upgrades */
 .ticker-wrapper { 
-    background: rgba(225, 29, 72, 0.03); 
-    border-top: 1px solid rgba(225, 29, 72, 0.2); 
-    border-bottom: 1px solid rgba(225, 29, 72, 0.2); 
+    background: rgba(10, 10, 15, 0.4); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
     backdrop-filter: blur(10px);
     overflow: hidden; 
-    padding: 1rem 0; 
-    margin-bottom: 3.5rem; 
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    padding: 0.8rem 0; 
+    margin-bottom: 3rem; 
 }
-.ticker-marquee { display: flex; white-space: nowrap; animation: ticker 40s linear infinite; }
 .ticker-item { 
-    padding: 0 4rem; 
-    font-size: 0.8rem; 
-    font-weight: 600; 
-    color: rgba(255, 255, 255, 0.9); 
-    display: flex; 
-    align-items: center; 
-    gap: 1rem; 
-    border-right: 1px solid rgba(255,255,255,0.05); 
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6); 
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
 }
-@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.ticker-item i { color: #e11d48; }
 
-/* Fix Invisibility Regressions */
-.fade-in-up { 
-    opacity: 1 !important; 
-    transform: translateY(0) !important; 
-    transition: opacity 0.8s ease, transform 0.8s ease; 
-}
-.js-enabled .fade-in-up:not(.scroll-active) {
-    opacity: 0 !important;
-    transform: translateY(30px) !important;
-}
-
-/* Modern Card Overrides */
-.card-modern {
-    background: rgba(30, 41, 59, 0.45) !important;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    border-radius: 1.5rem;
-    color: #fff !important;
-}
+.admin-view { padding-top: 8rem; min-height: 100vh; background: #050507; }
+</style>
 </style>
 
 <script>
