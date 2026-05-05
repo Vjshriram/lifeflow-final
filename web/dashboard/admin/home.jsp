@@ -23,8 +23,8 @@
 <!-- Premium Visuals: 3D Globe & Charts -->
 <script src="https://unpkg.com/globe.gl" defer></script>
 </head>
-<body style="background: #020617 !important; color: white; min-height: 100vh;">
-<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0f172a 0%, #020617 100%); z-index: -1;"></div>
+<body style="background: #0f172a !important; color: white; min-height: 100vh;">
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); z-index: -1;"></div>
 <% request.setAttribute("activePage", "dashboard"); %>
 <jsp:include page="/WEB-INF/fragments/admin-topnav.jsp" />
 
