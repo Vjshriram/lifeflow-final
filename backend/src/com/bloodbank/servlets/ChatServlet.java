@@ -88,8 +88,8 @@ public class ChatServlet extends HttpServlet {
 
         String identity = (name != null) ? name : "Hero";
         String userRole = (role != null) ? role.toLowerCase() : "donor";
-        // 🎯 BULLETPROOF FIX: Using 'gemini-pro' and merging instructions into the prompt since older API keys don't support 1.5-flash or systemInstruction.
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey;
+        // 🎯 FINAL FIX: Using exactly 'gemini-1.5-flash' as gemini-pro is deprecated and flash-latest is invalid.
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(url);
@@ -108,16 +108,22 @@ public class ChatServlet extends HttpServlet {
                     "- Use emojis strategically to make the interaction more engaging (e.g., 🩸, ❤️, 🎖️, 🤖, ✨).\n" +
                     "- If the user asks for help or 'what to do', provide specific instructions based on the platform features above.\n" +
                     "- Do NOT mention being an AI unless explicitly asked.\n" +
-                    "- Prioritize medical safety and official platform protocols.\n\n" +
-                    "USER REQUEST:\n" + input;
+                    "- Prioritize medical safety and official platform protocols.";
 
             JSONObject jsonPayload = new JSONObject();
 
-            // Merged Content (since gemini-pro doesn't support systemInstruction)
+            // System Instruction
+            JSONObject sysInstrObj = new JSONObject();
+            JSONArray sysParts = new JSONArray();
+            sysParts.put(new JSONObject().put("text", systemInstruction));
+            sysInstrObj.put("parts", sysParts);
+            jsonPayload.put("systemInstruction", sysInstrObj);
+
+            // User Content
             JSONArray contents = new JSONArray();
             JSONObject userContent = new JSONObject();
             JSONArray userParts = new JSONArray();
-            userParts.put(new JSONObject().put("text", systemInstruction));
+            userParts.put(new JSONObject().put("text", input));
             userContent.put("parts", userParts);
             contents.put(userContent);
             jsonPayload.put("contents", contents);
