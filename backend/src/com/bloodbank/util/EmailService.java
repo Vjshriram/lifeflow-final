@@ -244,6 +244,13 @@ public class EmailService {
         sendBroadcast(bccEmails, "📢 Community Request: " + group + " for " + name, wrapInTemplate("Peer-to-Peer Request", body));
     }
 
+    public static void sendPeerRequestConfirmationEmail(String toEmail, String patientName, String group) {
+        String body = "<p>Your community blood request for <span class='highlight'>" + group + "</span> (Patient: " + patientName + ") has been successfully broadcasted.</p>" +
+                      "<p>Eligible donors in the LifeFlow network have been notified. You will be updated as soon as someone responds to your request.</p>" +
+                      "<a href='https://lifeflow-final-production.up.railway.app/login.jsp' class='btn'>View Dashboard</a>";
+        sendEmail(Collections.singletonList(toEmail), null, null, "Request Broadcasted Successfully", wrapInTemplate("Request Confirmed", body));
+    }
+
     private static void sendBroadcast(List<String> bccEmails, String subject, String htmlBody) {
         sendEmail(null, bccEmails, null, subject, htmlBody);
     }

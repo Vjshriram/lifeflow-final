@@ -66,16 +66,30 @@ public class PeerRequestServlet extends HttpServlet {
 
                         java.util.List<com.google.cloud.firestore.QueryDocumentSnapshot> users = usersFuture.get().getDocuments();
                         java.util.List<String> emails = new java.util.ArrayList<>();
+                        String creatorEmail = null;
                         for (com.google.cloud.firestore.QueryDocumentSnapshot doc : users) {
                             if (!doc.getId().equals(userId)) {
                                 String email = doc.getString("email");
                                 if (email != null && !email.trim().isEmpty()) {
                                     emails.add(email);
                                 }
+                            } else {
+                                creatorEmail = doc.getString("email");
                             }
                         }
 
                         com.bloodbank.util.EmailService.sendPeerRequestBroadcastEmail(emails, patientName, bloodGroup, hospitalCity != null ? hospitalCity : "Unspecified", urgency != null ? urgency : "Normal", notes);
+                        
+                        if (creatorEmail == null) {
+                            com.google.cloud.firestore.DocumentSnapshot creatorDoc = db.collection("users").document(userId).get().get();
+                            if (creatorDoc.exists()) {
+                                creatorEmail = creatorDoc.getString("email");
+                            }
+                        }
+                        
+                        if (creatorEmail != null && !creatorEmail.trim().isEmpty()) {
+                            com.bloodbank.util.EmailService.sendPeerRequestConfirmationEmail(creatorEmail, patientName, bloodGroup);
+                        }
                     } catch (Exception notificationEx) {
                         System.err.println("Failed to broadcast peer request notifications: " + notificationEx.getMessage());
                     }
