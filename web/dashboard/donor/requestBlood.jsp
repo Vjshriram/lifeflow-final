@@ -118,8 +118,8 @@
                 <!-- Info Banner -->
                 <div class="card border-0 mb-4 rounded-4" style="background-color: #d1eff7;">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold text-white"><i class="fa-solid fa-shield-halved text-info me-2"></i> Safe & Secure</h5>
-                        <p class="mb-0 text-white small opacity-75">Your request will be visible to matched donors and local blood banks. High-urgency requests will also trigger mobile push notifications to donors in your city.</p>
+                        <h5 class="fw-bold text-dark"><i class="fa-solid fa-shield-halved text-info me-2"></i> Safe & Secure</h5>
+                        <p class="mb-0 text-dark small">Your request will be visible to matched donors and local blood banks. High-urgency requests will also trigger mobile push notifications to donors in your city.</p>
                     </div>
                 </div>
 
