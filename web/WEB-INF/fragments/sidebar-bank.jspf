@@ -3,6 +3,8 @@
     String root = request.getContextPath();
     String active = (String) request.getAttribute("activePage");
     if (active == null) active = "home";
+    String bankName = (String) session.getAttribute("fullName");
+    if (bankName == null) bankName = "Bank User";
 %>
 <link href="<%= root %>/assets/css/premium-modals.css" rel="stylesheet">
 <div class="sidebar p-4 shadow">
@@ -30,6 +32,19 @@
         <a href="<%= root %>/LogoutServlet" class="btn btn-outline-danger btn-sm w-100 rounded-pill py-2 border-opacity-25 shadow-sm">
             <i class="fa-solid fa-right-from-bracket me-2"></i>Sign Out
         </a>
+    </div>
+
+    <!-- User Profile Box -->
+    <div class="p-3 mb-4 rounded-4 border border-secondary border-opacity-10 shadow-sm" style="background: rgba(255,255,255,0.03);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-danger bg-opacity-20 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">
+                <i class="fa-solid fa-building-user text-danger"></i>
+            </div>
+            <div class="overflow-hidden">
+                <p class="text-white-50 extra-small text-uppercase fw-bold mb-0" style="font-size: 0.6rem; letter-spacing: 0.5px;">Current Session</p>
+                <p class="text-white fw-bold mb-0 text-truncate" style="font-size: 0.85rem;"><%= bankName %></p>
+            </div>
+        </div>
     </div>
 
     <div class="card bg-danger bg-opacity-10 border-0 rounded-4 p-3 shadow-sm">
