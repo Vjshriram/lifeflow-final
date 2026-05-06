@@ -183,6 +183,17 @@ public class EmailService {
         sendEmail(Collections.singletonList(toEmail), null, null, "You Saved a Life! ❤️", wrapInTemplate("Mission Accomplished", body));
     }
 
+    public static void sendDonationThankYouEmail(String toEmail, String donorName, String bankName) {
+        String body = "<p>Dear <span class='highlight'>" + donorName + "</span>,</p>" +
+                      "<p>Thank you for completing your blood donation at <span class='highlight'>" + bankName + "</span>.</p>" +
+                      "<p>Your selfless contribution has been verified. Your impact score has been updated, and you have officially moved closer to your next achievement milestone.</p>" +
+                      "<p>You are a vital part of the LifeFlow mission. We look forward to seeing you again when you are eligible for your next donation.</p>" +
+                      "<div style='text-align:center; margin-top: 30px;'>" +
+                      "  <a href='https://lifeflow-final-production.up.railway.app/dashboard/donor/home.jsp' class='btn'>View Your Hero ID</a>" +
+                      "</div>";
+        sendEmail(Collections.singletonList(toEmail), null, null, "Donation Completed - Thank You Hero! ❤️", wrapInTemplate("Hero Protocol: Donation Verified", body));
+    }
+
     public static void sendWeeklyNewsletter(List<String> bccEmails, String healthTip) {
         String body = "<p>Here is your weekly intelligence briefing from the LifeFlow Health Radar.</p>" +
                       "<div style='background: #1a2a1a; padding: 20px; border-radius: 12px; border: 1px solid #2d6a4f;'>" +

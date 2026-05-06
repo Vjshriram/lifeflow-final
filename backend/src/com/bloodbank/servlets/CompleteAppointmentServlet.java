@@ -105,11 +105,18 @@ public class CompleteAppointmentServlet extends HttpServlet {
                     } catch (Exception ignored) {}
                     
                     try {
-                        // Send email to the donor who finished the donation
+                        // 📧 Trigger Premium Thank You Email to Donor
                         DocumentSnapshot dDoc = db.collection("users").document(donorId).get().get();
                         if(dDoc.exists() && dDoc.getString("email") != null) {
-                            String msg = "Thank you for completing your blood donation! Your selfless act has saved a life today. You are a true hero.";
-                            com.bloodbank.util.EmailService.sendWeeklyNewsletter(java.util.Collections.singletonList(dDoc.getString("email")), msg);
+                            String donorName = dDoc.getString("full_name");
+                            String donorEmail = dDoc.getString("email");
+                            
+                            // Fetch Bank Name for the email
+                            DocumentSnapshot bDoc = db.collection("blood_banks").document(bankId).get().get();
+                            String bankName = bDoc.getString("bank_name");
+                            if(bankName == null) bankName = "a LifeFlow Partnered Facility";
+
+                            com.bloodbank.util.EmailService.sendDonationThankYouEmail(donorEmail, donorName, bankName);
                         }
                     } catch (Exception ignored) {}
                 }
