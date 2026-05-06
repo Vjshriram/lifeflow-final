@@ -207,7 +207,11 @@
     const apiBase = '<%= request.getContextPath() %>/api/locator';
 
     function createDirectionsUrl(lat, lng, label) {
-        return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        if (lat && lng && lat !== 0 && lng !== 0) {
+            return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+        } else {
+            return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(label)}`;
+        }
     }
 
     function renderResults(banks) {

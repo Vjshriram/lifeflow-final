@@ -69,22 +69,49 @@ public class CompleteAppointmentServlet extends HttpServlet {
                 // 🏆 Leaderboard Integration: Increment donor's donation count
                 String donorId = apptDoc.getString("donor_id");
                 if (donorId != null && !donorId.isEmpty()) {
-                    db.collection("users").document(donorId).update("donation_count", com.google.cloud.firestore.FieldValue.increment(1)).get();
+                    try {
+                        db.collection("users").document(donorId).update("donation_count", com.google.cloud.firestore.FieldValue.increment(1)).get();
+                    } catch (Exception ignored) {}
                     
                     // 🤖 AUTOMATION: Trigger Milestones and Stock Guards
                     String bloodGroup = apptDoc.getString("blood_group");
                     com.bloodbank.util.AutomationService.processDonationImpact(donorId, bankId, bloodGroup);
                     
-                    // 🚀 AUTO-RESOLVE: Mark linked emergency alerts or peer requests as completed
-                    String alertId = apptDoc.getString("alert_id");
-                    if (alertId != null && !alertId.isEmpty()) {
-                        db.collection("emergency_alerts").document(alertId).update("status", "RESOLVED").get();
-                    }
+                    try {
+                        String alertId = apptDoc.getString("alert_id");
+                        if (alertId != null && !alertId.isEmpty()) {
+                            db.collection("emergency_alerts").document(alertId).update("status", "RESOLVED").get();
+                        }
+                    } catch (Exception ignored) {}
                     
-                    String peerRequestId = apptDoc.getString("peer_request_id");
-                    if (peerRequestId != null && !peerRequestId.isEmpty()) {
-                        db.collection("peer_requests").document(peerRequestId).update("status", "COMPLETED").get();
-                    }
+                    try {
+                        String peerRequestId = apptDoc.getString("peer_request_id");
+                        if (peerRequestId != null && !peerRequestId.isEmpty()) {
+                            db.collection("peer_requests").document(peerRequestId).update("status", "COMPLETED").get();
+                            
+                            // Send email to the donor who raised the request
+                            DocumentSnapshot p2pDoc = db.collection("peer_requests").document(peerRequestId).get().get();
+                            if(p2pDoc.exists()) {
+                                String requesterId = p2pDoc.getString("donor_id");
+                                if(requesterId != null) {
+                                    DocumentSnapshot reqDoc = db.collection("users").document(requesterId).get().get();
+                                    if(reqDoc.exists() && reqDoc.getString("email") != null) {
+                                        String msg = "Your blood request for " + p2pDoc.getString("requester_name") + " has been successfully fulfilled by a donor! Thank you for using LifeFlow.";
+                                        com.bloodbank.util.EmailService.sendWeeklyNewsletter(java.util.Collections.singletonList(reqDoc.getString("email")), msg);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                    
+                    try {
+                        // Send email to the donor who finished the donation
+                        DocumentSnapshot dDoc = db.collection("users").document(donorId).get().get();
+                        if(dDoc.exists() && dDoc.getString("email") != null) {
+                            String msg = "Thank you for completing your blood donation! Your selfless act has saved a life today. You are a true hero.";
+                            com.bloodbank.util.EmailService.sendWeeklyNewsletter(java.util.Collections.singletonList(dDoc.getString("email")), msg);
+                        }
+                    } catch (Exception ignored) {}
                 }
             }
 

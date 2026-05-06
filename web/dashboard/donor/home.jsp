@@ -280,7 +280,7 @@
                         
                         let respondBtn = '';
                         if (!isMine && req.status === "PENDING" && req.blood_group === myBloodGroup) {
-                            respondBtn = `<a href="${root}/BookAppointmentServlet?requestId=${req.id}" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.7rem;">Respond</a>`;
+                            respondBtn = `<a href="${root}/BookAppointmentServlet?prefillBankId=${req.bank_id || ''}&requestId=${req.id}" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.7rem;">Respond</a>`;
                         }
 
                         p2pTable.innerHTML += `
@@ -317,7 +317,7 @@
                         const bankName = data.bankNames[appt.bank_id] || "Unknown Bank";
                         let certAction = `<span class="text-white-50" style="font-size: 0.8rem;"><i class="fa-solid fa-hourglass-empty me-1"></i> Pending Verification</span>`;
                         if (st === "COMPLETED") {
-                            certAction = `<a class="btn btn-sm btn-outline-danger rounded-pill fw-bold" href="${root}/certificate?appointmentId=${appt.id}" target="_blank"><i class="fa-solid fa-award me-1"></i> Certificate</a>`;
+                            certAction = `<a class="btn btn-sm btn-outline-danger rounded-pill fw-bold" href="${root}/certificate?appointmentId=\${appt.id}" target="_blank"><i class="fa-solid fa-award me-1"></i> Certificate</a>`;
                         }
 
                         historyTable.innerHTML += `

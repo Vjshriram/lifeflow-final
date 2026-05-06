@@ -132,35 +132,41 @@ public class EmergencyNotificationServlet extends HttpServlet {
         LocalDateTime threeMonthsAgo = LocalDateTime.now().minusMonths(3);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        for (DocumentSnapshot tokenDoc : tokenDocs) {
-            if (!tokenDoc.exists()) continue;
+        for (QueryDocumentSnapshot userDoc : users) {
+            String userId = userDoc.getId();
+            DocumentSnapshot tokenDoc = null;
+            for (DocumentSnapshot td : tokenDocs) {
+                if (td.getId().equals(userId)) {
+                    tokenDoc = td;
+                    break;
+                }
+            }
+
+            boolean inRadius = false;
             
-            String userId = tokenDoc.getId();
-            QueryDocumentSnapshot userDoc = userMap.get(userId);
-            if (userDoc == null) continue;
+            if (tokenDoc != null && tokenDoc.exists() && tokenDoc.getDouble("last_latitude") != null && tokenDoc.getDouble("last_longitude") != null) {
+                Double devLat = tokenDoc.getDouble("last_latitude");
+                Double devLng = tokenDoc.getDouble("last_longitude");
+                double dLat = Math.toRadians(devLat - bankLat);
+                double dLng = Math.toRadians(devLng - bankLng);
+                double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(Math.toRadians(bankLat)) * Math.cos(Math.toRadians(devLat)) *
+                        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+                double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                double distanceKm = 6371 * c;
+                if (distanceKm <= radiusKm) {
+                    inRadius = true;
+                }
+            } else {
+                inRadius = true; // Fallback: notify if we can't determine location
+            }
 
-            Double devLat = tokenDoc.getDouble("last_latitude");
-            Double devLng = tokenDoc.getDouble("last_longitude");
-            if (devLat == null || devLng == null) continue;
-
-            // Haversine
-            double dLat = Math.toRadians(devLat - bankLat);
-            double dLng = Math.toRadians(devLng - bankLng);
-            double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(Math.toRadians(bankLat)) * Math.cos(Math.toRadians(devLat)) *
-                    Math.sin(dLng / 2) * Math.sin(dLng / 2);
-            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            double distanceKm = 6371 * c;
-
-            if (distanceKm <= radiusKm) {
-                // Keep email list based on distance/group
+            if (inRadius) {
                 String donorEmail = userDoc.getString("email");
                 if (donorEmail != null) donorEmails.add(donorEmail);
 
-                // 🎯 OPTIMIZATION: Check eligibility using denormalized last_donation_date
                 String lastDonationStr = userDoc.getString("last_donation_date");
                 boolean canDonate = true;
-                
                 if (lastDonationStr != null && !lastDonationStr.isEmpty()) {
                     try {
                         LocalDateTime lastDonation = LocalDateTime.parse(lastDonationStr, formatter);
@@ -170,7 +176,7 @@ public class EmergencyNotificationServlet extends HttpServlet {
                     } catch (Exception ignored) {}
                 }
 
-                if (canDonate) {
+                if (canDonate && tokenDoc != null && tokenDoc.exists()) {
                     String token = tokenDoc.getString("device_token");
                     if (token != null) fcmTokens.add(token);
                 }

@@ -99,6 +99,7 @@ public class DonorDashboardServlet extends HttpServlet {
                 p.put("status", doc.getString("status"));
                 p.put("created_at", doc.getString("created_at"));
                 p.put("donor_id", doc.getString("donor_id")); // To check if it's "mine"
+                p.put("bank_id", doc.getString("bank_id"));
                 p2pArr.put(p);
             }
             result.put("communityRequests", p2pArr);
