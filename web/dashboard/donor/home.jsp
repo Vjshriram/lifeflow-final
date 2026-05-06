@@ -280,7 +280,7 @@
                         
                         let respondBtn = '';
                         if (!isMine && req.status === "PENDING" && req.blood_group === myBloodGroup) {
-                            respondBtn = `<a href="${root}/BookAppointmentServlet?prefillBankId=${req.bank_id || ''}&requestId=${req.id}" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.7rem;">Respond</a>`;
+                            respondBtn = `<a href="${root}/BookAppointmentServlet?prefillBankId=\${req.bank_id || ''}&requestId=\${req.id}" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" style="font-size: 0.7rem;">Respond</a>`;
                         }
 
                         p2pTable.innerHTML += `
