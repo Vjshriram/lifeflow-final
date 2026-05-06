@@ -46,18 +46,58 @@
         </a>
     </div>
 
-    <!-- User Profile Box -->
-    <div class="p-3 mb-4 rounded-4 border border-secondary border-opacity-10 shadow-sm" style="background: rgba(255,255,255,0.03);">
-        <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle bg-danger bg-opacity-20 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; flex-shrink: 0;">
-                <i class="fa-solid fa-user-shield text-danger"></i>
-            </div>
-            <div class="overflow-hidden">
-                <p class="text-white-50 extra-small text-uppercase fw-bold mb-0" style="font-size: 0.6rem; letter-spacing: 0.5px;">Current Session</p>
-                <p class="text-white fw-bold mb-0 text-truncate" style="font-size: 0.85rem;"><%= userName %></p>
+    <!-- Premium User Profile Card -->
+    <div class="user-profile-card mt-auto mb-4">
+        <div class="profile-glass p-3 rounded-4 border border-white border-opacity-10 position-relative overflow-hidden">
+            <div class="glass-shine"></div>
+            <div class="d-flex align-items-center gap-3 position-relative" style="z-index: 1;">
+                <div class="avatar-container position-relative">
+                    <div class="avatar-glow"></div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center avatar-circle" style="width: 44px; height: 44px; background: linear-gradient(135deg, #ff4d4d 0%, #cc0000 100%);">
+                        <i class="fa-solid fa-user-shield text-white fs-5"></i>
+                    </div>
+                    <div class="status-indicator-dot"></div>
+                </div>
+                <div class="overflow-hidden">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="text-white-50 extra-small text-uppercase fw-black" style="font-size: 0.55rem; letter-spacing: 1.5px;">Live Session</span>
+                        <span class="badge bg-success rounded-pill p-1" style="width: 6px; height: 6px; animation: pulse-green 2s infinite;"></span>
+                    </div>
+                    <p class="text-white fw-bold mb-0 text-truncate" style="font-size: 0.9rem; letter-spacing: -0.2px;"><%= userName %></p>
+                </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .user-profile-card { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .user-profile-card:hover { transform: translateY(-3px) scale(1.02); }
+        .profile-glass { 
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+        }
+        .glass-shine {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .avatar-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 100%; height: 100%; background: #ff4d4d; filter: blur(12px); opacity: 0.3;
+        }
+        .avatar-circle { border: 2px solid rgba(255,255,255,0.1); }
+        .status-indicator-dot {
+            position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px;
+            background: #22c55e; border: 2px solid #0f172a; border-radius: 50%;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .fw-black { font-weight: 900; }
+    </style>
 
     <div class="card bg-danger bg-opacity-10 border-0 rounded-4 p-3 shadow-sm">
         <p class="text-white-50 small mb-2"><i class="fa-solid fa-headset me-1"></i> Support Hub</p>
