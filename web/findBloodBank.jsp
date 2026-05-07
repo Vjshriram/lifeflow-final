@@ -316,8 +316,11 @@
         const stateSelect = document.getElementById("stateSelect");
         const citySelect = document.getElementById("city");
         try {
-            const response = await fetch("https://raw.githubusercontent.com/sab99r/Indian-States-And-Districts/master/states-and-districts.json");
+            console.log("Fetching geodata from local assets...");
+            const response = await fetch("<%=request.getContextPath()%>/assets/data/states-and-districts.json");
+            if (!response.ok) throw new Error("HTTP error " + response.status);
             const data = await response.json();
+            console.log("Geodata loaded successfully:", data.states.length, "states found.");
             data.states.forEach(state => {
                 const opt = document.createElement("option");
                 opt.value = state.state;
@@ -327,14 +330,18 @@
             stateSelect.addEventListener("change", () => {
                 citySelect.innerHTML = '<option value="" selected disabled>Select District</option>';
                 const s = data.states.find(x => x.state === stateSelect.value);
-                s.districts.forEach(d => {
-                    const opt = document.createElement("option");
-                    opt.value = d;
-                    opt.textContent = d;
-                    citySelect.appendChild(opt);
-                });
+                if (s) {
+                    s.districts.forEach(d => {
+                        const opt = document.createElement("option");
+                        opt.value = d;
+                        opt.textContent = d;
+                        citySelect.appendChild(opt);
+                    });
+                }
             });
-        } catch(e){}
+        } catch(e){
+            console.error("Failed to load geodata:", e);
+        }
     });
 </script>
 
