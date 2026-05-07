@@ -311,38 +311,73 @@
         document.getElementById('resultsBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger py-5">Network error.</td></tr>';
     }
 
-    // Geodata loader
-    document.addEventListener("DOMContentLoaded", async () => {
+    // Geodata loader - Robust implementation
+    (async function initGeodata() {
         const stateSelect = document.getElementById("stateSelect");
         const citySelect = document.getElementById("city");
-        try {
-            console.log("Fetching geodata from local assets...");
-            const response = await fetch("<%=request.getContextPath()%>/assets/data/states-and-districts.json");
-            if (!response.ok) throw new Error("HTTP error " + response.status);
-            const data = await response.json();
-            console.log("Geodata loaded successfully:", data.states.length, "states found.");
-            data.states.forEach(state => {
-                const opt = document.createElement("option");
-                opt.value = state.state;
-                opt.textContent = state.state;
-                stateSelect.appendChild(opt);
-            });
-            stateSelect.addEventListener("change", () => {
-                citySelect.innerHTML = '<option value="" selected disabled>Select District</option>';
-                const s = data.states.find(x => x.state === stateSelect.value);
-                if (s) {
-                    s.districts.forEach(d => {
-                        const opt = document.createElement("option");
-                        opt.value = d;
-                        opt.textContent = d;
-                        citySelect.appendChild(opt);
-                    });
-                }
-            });
-        } catch(e){
-            console.error("Failed to load geodata:", e);
+        
+        if (!stateSelect || !citySelect) {
+            console.error("Geodata loader: Select elements not found.");
+            return;
         }
-    });
+
+        async function tryLoad(url) {
+            console.log("Attempting to fetch geodata from:", url);
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            return await resp.json();
+        }
+
+        try {
+            // Try relative path first, then absolute path with context
+            let data;
+            const cacheBuster = "?v=" + Date.now();
+            try {
+                data = await tryLoad("assets/data/states-and-districts.json" + cacheBuster);
+            } catch (e) {
+                console.warn("Relative fetch failed, trying context path...");
+                const ctx = "<%=request.getContextPath()%>";
+                const absoluteUrl = (ctx.endsWith("/") ? ctx : ctx + "/") + "assets/data/states-and-districts.json" + cacheBuster;
+                data = await tryLoad(absoluteUrl.replace("//", "/"));
+            }
+
+            if (data && data.states) {
+                console.log("Geodata loaded successfully:", data.states.length, "states found.");
+                
+                // Clear existing options except placeholder
+                stateSelect.innerHTML = '<option value="" selected disabled>Select State</option>';
+                
+                data.states.forEach(state => {
+                    const opt = document.createElement("option");
+                    opt.value = state.state;
+                    opt.textContent = state.state;
+                    stateSelect.appendChild(opt);
+                });
+
+                stateSelect.addEventListener("change", () => {
+                    citySelect.innerHTML = '<option value="" selected disabled>Select District</option>';
+                    const s = data.states.find(x => x.state === stateSelect.value);
+                    if (s && s.districts) {
+                        s.districts.forEach(d => {
+                            const opt = document.createElement("option");
+                            opt.value = d;
+                            opt.textContent = d;
+                            citySelect.appendChild(opt);
+                        });
+                    }
+                });
+            } else {
+                throw new Error("Invalid data format");
+            }
+        } catch (e) {
+            console.error("Failed to load geodata:", e);
+            // Visible fallback if fetch fails completely
+            const opt = document.createElement("option");
+            opt.textContent = "Error loading states. Please refresh.";
+            opt.disabled = true;
+            stateSelect.appendChild(opt);
+        }
+    })();
 </script>
 
 </body>
